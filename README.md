@@ -103,6 +103,12 @@ Other limits today:
 - leanSPHINCS isn't final. A new version means a new verifier and a new ledger.
 - The web app keeps keys in the browser's local storage, which suits small amounts only.
 
+## Aggregation
+
+The 7,740-byte signature is the expensive part, about 123,000 gas of calldata and 86,000 to verify. Ethereum's plan is [EIP-8288](https://eips.ethereum.org/EIPS/eip-8288), which keeps signatures off chain entirely. Mempool nodes fold the signatures they see into one recursive STARK, a hash-based proof, the builder merges them into a single proof per block, and a transaction pays about 33,000 gas per signature as the draft is written. It builds on EIP-8141, so ETC would need both, and a fork.
+
+Without a fork, ETC can't do much. One signer can sign a Merkle root over many payments, and a relayer can batch transfers into one call. A STARK verified on chain is far too big for ETC's 8,000,000 gas blocks, and wrapping one in a SNARK would bring back elliptic curves, which defeats the point. [docs/aggregation.md](docs/aggregation.md) has the details.
+
 ## Status
 
 As of 2026-11-10 the contracts, a TypeScript signer, a command-line send script and the pq.classix.dev app are built and tested on a local chain with ETC's rules. Next is the mainnet deploy and the first transaction. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
