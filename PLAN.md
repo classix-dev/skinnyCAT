@@ -1,12 +1,12 @@
 # Plan
 
-The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. istora asked on 2026-11-10 for this to run on mainnet in production. Mordor comes first as the rehearsal. The design is in [README.md](README.md).
+The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. istora asked on 2026-11-10 for this to run on mainnet in production, and on the same day decided to skip the Mordor rehearsal. The full flow is tested on a local chain with ETC's rules instead. The design is in [README.md](README.md).
 
 ## What ETC Supports Today
 
 We checked Core-Geth's `params/config_classic.go` and `config_mordor.go` and queried both chains on 2026-11-10.
 
-| | ETC mainnet | Mordor |
+| | ETC mainnet | Mordor (checked, not used) |
 |---|---|---|
 | latest fork | Spiral (block 19,250,000) | Spiral (block 9,957,000) |
 | EVM target | Shanghai, no withdrawals | same |
@@ -30,7 +30,7 @@ Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to 
 
 Done 2026-11-10. 8 tests in [test/LeanSphincsWallet.t.sol](test/LeanSphincsWallet.t.sol) pass with signatures from the Python signer.
 
-- `LeanSphincsWallet` holds the 32-byte public key, a verifier address and a nonce. `execute(to, value, data, sig)` checks the signature over `keccak256(abi.encode(tag, chainid, wallet, nonce, to, value, keccak256(data)))`, bumps the nonce and makes the call. Anyone can submit it.
+- `LeanSphincsWallet` holds the 32-byte public key, a verifier address and a nonce. `execute(to, value, data, deadline, sig)` checks the signature over `keccak256(abi.encode(tag, chainid, wallet, nonce, to, value, keccak256(data), deadline))`, bumps the nonce and makes the call. Anyone can submit it.
 - `LeanSphincsWalletFactory` deploys wallets as EIP-1167 clones with `CREATE2`, salted by the public key, and initializes them in the same call so nobody can front-run the key setup.
 - Tests sign with the Python reference signer over FFI. They cover a valid transfer, replay, wrong chain, wrong wallet, tampering, and calls from a third party.
 - A script checks the runtime bytecode of every contract for opcodes Spiral doesn't have.
@@ -41,31 +41,25 @@ Done 2026-11-10 in [signer](signer). 44 tests pass, about 3.5 s per signature in
 
 A TypeScript leanSPHINCS signer, ported from the Python reference and checked byte for byte against EthLib's vectors and the KAT fixture. The CLI and the web app both use it. The Python signer stays as the cross-check.
 
-### M3. First Transaction on Mordor
+### M3. Mainnet Deploy and the First Transaction
 
-[script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy dry run puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. Waiting on Mordor ETC for the deployer `0x0797c50015a94e79d7713fcFa9165f228E2bB5e8`. The faucet at faucet.etcmc-monitor.org took our claim on 2026-11-10 but hasn't paid any claim since 2026-08-08, and the GHOST faucet needs a captcha.
-
-Deploy the verifier and factory through the CREATE2 deployer so the addresses match on Mordor and mainnet. Create a wallet, fund it from a Mordor faucet, and send ETC out of it with a leanSPHINCS signature. Record addresses and transaction hashes in `docs/deployments.md`.
+[script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy goes through the CREATE2 deployer and puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the two deploys and the first send come to about 0.0025 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract. Addresses and transaction hashes go in `docs/deployments.md`.
 
 ### M4. pq.classix.dev
 
-Built in [web](web), with a Playwright test of the whole flow against a local anvil. Not deployed yet. It goes live once M3 puts the contracts on Mordor.
+Built in [web](web), with a Playwright test of the whole flow against a local anvil. It's being redesigned with its own identity, blue, React and Tailwind, with a "by Classix" mark as on etchd and Triforce. It runs on ETC mainnet only and goes live after M3.
 
-A static web app in Classix branding, modeled on the flow of the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop).
+The flow follows the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop).
 
 1. Generate a leanSPHINCS key in the browser and show the backup.
 2. Show the counterfactual wallet address so the user can fund it.
-3. Connect any injected web3 wallet (EIP-6963 discovery) on chain 61 or 63.
+3. Connect any injected web3 wallet (EIP-6963 discovery) on chain 61.
 4. Sign the transfer with leanSPHINCS in a Web Worker, verify it locally and with `eth_call`, then have the web3 wallet submit `execute`. On first use the same transaction creates the wallet through the factory.
 5. Show the receipt and a Blockscout link.
 
-On load the page runs self-tests against the EthLib vectors and checks the deployed verifier's code hash, as the workshop does. It's served as a Cloudflare Worker with static assets on the classix.dev zone, like the other Classix static sites. It runs on Mordor until M5.
+On load the page runs self-tests against the EthLib vectors and checks the deployed verifier's code hash, as the workshop does. It's a static site with no backend, served by a Cloudflare Worker with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev.
 
-### M5. Mainnet
-
-Deploy the verifier and factory at the same CREATE2 addresses on chain 61, make the first quantum-secure transaction, and switch pq.classix.dev to mainnet with Mordor as an option. This spends real ETC from a funded deployer, so we confirm with istora which key pays before it runs.
-
-### M6. Write-Up
+### M5. Write-Up
 
 A post for classix.dev covering what we did and how to check it, crediting the sources in [README.md](README.md). Publishing it needs istora's go.
 
