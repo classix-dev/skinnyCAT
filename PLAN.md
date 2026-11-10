@@ -43,7 +43,7 @@ A TypeScript leanSPHINCS signer, ported from the Python reference and checked by
 
 ### M3. Mainnet Deploy and the First Transaction
 
-[script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy goes through the CREATE2 deployer and puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the two deploys and the first send come to about 0.0025 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract. Addresses and transaction hashes go in `docs/deployments.md`.
+The first transaction carries the message "The first quantum-secure transaction on Ethereum Classic, by Classix" as signed calldata. [script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy goes through the CREATE2 deployer and puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the two deploys and the first send come to about 0.0025 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract. Addresses and transaction hashes go in `docs/deployments.md`.
 
 ### M4. pq.classix.dev
 

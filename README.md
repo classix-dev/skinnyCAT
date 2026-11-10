@@ -29,6 +29,23 @@ The verifier is `LeanSphincsLayeredAsm` from [nconsigny/SPHINCS-](https://github
 
 The [leanSphincs](https://github.com/leanEthereum/leanSphincs) competition run by the Lean Ethereum project hasn't picked a final scheme yet. If the parameters change, we deploy a new verifier and new wallets point at it. Nothing here is audited.
 
+## Current Limitations
+
+The funds are quantum-secure, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move ETC out of the wallet, change the call, or replay the signature, because the wallet checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
+
+Ethereum's answer is the frame transaction, [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141), a draft from 2026-01-29 with transaction type `0x06`. Its abstract says it
+
+> Adds a new transaction whose validity and gas payment can be defined abstractly.
+
+The account's own code checks the signature in a VERIFY frame and approves the gas payment with a new `APPROVE` opcode, so no ECDSA key is involved at all. The [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop) sends exactly that kind of leanSPHINCS transaction on the Daisugi research testnet. ETC would need an ECIP and a hard fork to get frame transactions. Until then, a contract wallet with an ECDSA gas payer is what ETC supports.
+
+Other limits today:
+
+- Nothing here is audited, including the vendored verifier.
+- Each signature is 7,740 bytes, so a send costs about 265,000 gas, around 13 times a plain transfer.
+- leanSPHINCS isn't final. A new parameter set means a new verifier and new wallets.
+- The web app keeps the key in the browser's local storage, which suits small amounts only.
+
 ## Status
 
 As of 2026-11-10 the wallet contracts, a TypeScript signer, a command-line send script and the pq.classix.dev app are built and tested on a local chain. Next is the mainnet deploy and the first transaction. We skip Mordor. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
