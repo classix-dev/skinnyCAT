@@ -7,7 +7,7 @@ import {LeanSphincsFFI} from "./utils/LeanSphincsFFI.sol";
 import {ILeanSphincsVerifier} from "../src/ILeanSphincsVerifier.sol";
 import {LeanSphincsLedger} from "../src/LeanSphincsLedger.sol";
 
-/// The demo story. Alice deposits ETC and pays Bob in one transaction. Bob has pqETC but no ETC,
+/// The demo story. Alice deposits ETC and pays Bob in one transaction. Bob has scETC but no ETC,
 /// so his signed transfers go through a relayer, who takes the fee Bob signed for. Bob can
 /// withdraw to a fresh address that never held ETC. Signatures come from the TypeScript signer
 /// over FFI, a few seconds each.
@@ -36,7 +36,7 @@ contract LeanSphincsLedgerTest is LeanSphincsFFI {
 
     function setUp() public {
         ledger = new LeanSphincsLedger(
-            ILeanSphincsVerifier(address(new LeanSphincsVerifier())), "Post-Quantum ETC", "pqETC"
+            ILeanSphincsVerifier(address(new LeanSphincsVerifier())), "skinnyCAT ETC", "scETC"
         );
         (aSeed, aRoot) = _keygen(aliceSeed);
         (bSeed, bRoot) = _keygen(bobSeed);
@@ -48,13 +48,13 @@ contract LeanSphincsLedgerTest is LeanSphincsFFI {
     }
 
     function testMetadata() public view {
-        assertEq(ledger.name(), "Post-Quantum ETC");
-        assertEq(ledger.symbol(), "pqETC");
+        assertEq(ledger.name(), "skinnyCAT ETC");
+        assertEq(ledger.symbol(), "scETC");
         assertEq(ledger.decimals(), 18);
     }
 
     function testAliceAndBob() public {
-        // 1. Alice deposits 1 ETC and pays Bob 0.4 pqETC in one transaction, with the memo.
+        // 1. Alice deposits 1 ETC and pays Bob 0.4 scETC in one transaction, with the memo.
         bytes memory sigA =
             _sign(aliceSeed, ledger.transferDigest(alice, 0, bob, 0.4 ether, 0, deadline, MEMO));
         vm.expectEmit(address(ledger));
@@ -71,7 +71,7 @@ contract LeanSphincsLedgerTest is LeanSphincsFFI {
         assertEq(ledger.totalSupply(), 1 ether);
         assertEq(address(ledger).balance, 1 ether);
 
-        // 2. Bob has no ETC. He signs 0.1 pqETC back to Alice with a 0.001 fee, and a relayer
+        // 2. Bob has no ETC. He signs 0.1 scETC back to Alice with a 0.001 fee, and a relayer
         //    with an ordinary account submits it and gets the fee in ETC.
         assertEq(bob.balance, 0);
         bytes memory sigB =

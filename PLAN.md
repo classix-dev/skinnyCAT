@@ -30,7 +30,7 @@ Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to 
 
 Done 2026-11-10, on the 2026-11-03 version of the spec.
 
-- pqETC ([src/LeanSphincsLedger.sol](src/LeanSphincsLedger.sol)), the main contract. ETC deposited to a leanSPHINCS key, moved by signed messages anyone can relay for a fee the key signs, with a deposit and a spend in one transaction and a signed memo emitted as an event. Accounts are `keccak256(0x10 ‖ PK.seed ‖ PK.root)[12:]`. Its tests follow the demo, where Alice pays Bob and Bob, holding no ETC, pays back through a relayer and withdraws to a fresh address.
+- scETC ([src/LeanSphincsLedger.sol](src/LeanSphincsLedger.sol)), the main contract. ETC deposited to a leanSPHINCS key, moved by signed messages anyone can relay for a fee the key signs, with a deposit and a spend in one transaction and a signed memo emitted as an event. Accounts are `keccak256(0x10 ‖ PK.seed ‖ PK.root)[12:]`. Its tests follow the demo, where Alice pays Bob and Bob, holding no ETC, pays back through a relayer and withdraws to a fresh address.
 - A contract wallet and its `CREATE2` factory ([src/LeanSphincsWallet.sol](src/LeanSphincsWallet.sol)), for keys that need to call other contracts.
 
 ### M2. Signer
@@ -43,7 +43,7 @@ Done 2026-11-10. 25 Foundry tests and 44 signer tests pass, every EthLib vector 
 
 ### M4. Mainnet Deploy and the First Transaction
 
-Deploy the verifier, pqETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends pqETC to Bob in one transaction, with the memo "The first quantum-secure transaction on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
+Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends scETC to Bob in one transaction, with the memo "The first quantum-secure transaction on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
 
 It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the deploys and the demo come to about 0.004 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract.
 
@@ -70,9 +70,9 @@ Measured in Foundry. The current-spec verifier adds about 4,000 gas per verify o
 
 | step | gas | ETC at 1 gwei |
 |---|---|---|
-| deploy verifier, pqETC and wallet factory | about 2,200,000 | about 0.0022 |
+| deploy verifier, scETC and wallet factory | about 2,200,000 | about 0.0022 |
 | Alice deposits and pays Bob in one transaction | 333,000 | 0.00033 |
-| a relayed pqETC transfer | 289,000 | 0.00029 |
+| a relayed scETC transfer | 289,000 | 0.00029 |
 | a relayed withdrawal | 298,000 | 0.0003 |
 
 Most of a send is the 7,740-byte signature, about 124,000 gas of calldata, and its verification, about 86,000. Everything fits well inside the 8,000,000 gas block limit.
@@ -82,6 +82,6 @@ Most of a send is the 7,740-byte signature, about 124,000 gas of calldata, and i
 - Who funds the mainnet deployer, and from which key.
 - How users back up keys. EthLib's secret key is a 32-byte seed. A BIP-39 phrase that encodes it is the likely choice. We rule out deriving the seed from an ECDSA wallet signature, because a quantum attacker who recovers the ECDSA key could recompute the seed.
 - Whether we verify contract source on Blockscout. That publishes the code, so we ask istora first. This repo stays private until istora says otherwise.
-- leanSPHINCS isn't final. A new version means a new verifier and a new pqETC, and we don't plan upgradeable contracts.
+- leanSPHINCS isn't final. A new version means a new verifier and a new scETC, and we don't plan upgradeable contracts.
 - Whether "first" holds. We haven't found an earlier hash-based signature transaction on ETC, but we haven't searched the chain.
 - Audit. None of this is audited. The site says so and suggests tiny amounts only.

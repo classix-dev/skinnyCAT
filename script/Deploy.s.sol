@@ -7,7 +7,7 @@ import {ILeanSphincsVerifier} from "../src/ILeanSphincsVerifier.sol";
 import {LeanSphincsWalletFactory} from "../src/LeanSphincsWalletFactory.sol";
 import {LeanSphincsLedger} from "../src/LeanSphincsLedger.sol";
 
-/// Deploys the verifier, the wallet factory and the pqETC ledger through the CREATE2 deployer at
+/// Deploys the verifier, the wallet factory and the scETC ledger through the CREATE2 deployer at
 /// 0x4e59b44847b379578588920ca78fbf26c0b4956c, so the addresses depend only on the code and the salt.
 /// Skips any contract that is already deployed.
 ///
@@ -21,7 +21,7 @@ contract Deploy is Script {
         bytes memory fInit = abi.encodePacked(type(LeanSphincsWalletFactory).creationCode, abi.encode(verifier));
         factory = vm.computeCreate2Address(SALT, keccak256(fInit));
         bytes memory lInit = abi.encodePacked(
-            type(LeanSphincsLedger).creationCode, abi.encode(verifier, "Post-Quantum ETC", "pqETC")
+            type(LeanSphincsLedger).creationCode, abi.encode(verifier, "skinnyCAT ETC", "scETC")
         );
         ledger = vm.computeCreate2Address(SALT, keccak256(lInit));
 
@@ -29,7 +29,7 @@ contract Deploy is Script {
         if (verifier.code.length == 0) new LeanSphincsVerifier{salt: SALT}();
         if (factory.code.length == 0) new LeanSphincsWalletFactory{salt: SALT}(ILeanSphincsVerifier(verifier));
         if (ledger.code.length == 0) {
-            new LeanSphincsLedger{salt: SALT}(ILeanSphincsVerifier(verifier), "Post-Quantum ETC", "pqETC");
+            new LeanSphincsLedger{salt: SALT}(ILeanSphincsVerifier(verifier), "skinnyCAT ETC", "scETC");
         }
         vm.stopBroadcast();
 
@@ -37,6 +37,6 @@ contract Deploy is Script {
         console.log("verifier  ", verifier);
         console.log("factory   ", factory);
         console.log("wallet impl", address(LeanSphincsWalletFactory(factory).implementation()));
-        console.log("pqETC      ", ledger);
+        console.log("scETC      ", ledger);
     }
 }

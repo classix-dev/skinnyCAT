@@ -1,6 +1,6 @@
 # pq-sig
 
-The first quantum-secure transaction on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then a web app at pq.classix.dev where anyone can make their own.
+The first quantum-secure transaction on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at pq.classix.dev where anyone can make their own.
 
 This is a proof of concept and an experiment, built for fun. It isn't meant for real use. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
@@ -12,9 +12,9 @@ ETC has no account abstraction and no [EIP-7702](https://eips.ethereum.org/EIPS/
 
 What ETC does have is an EVM, Keccak and `CREATE2`. That's enough to check a leanSPHINCS signature in an ordinary contract, with no fork.
 
-The main contract is pqETC, a ledger of wrapped ETC that only leanSPHINCS keys can move. You deposit ETC to a key. From then on every transfer or withdrawal is a message signed by that key, which anyone can submit. The key can sign a fee for whoever submits it, so a holder doesn't need an ECDSA account or any ETC of their own. ETC sent along with a signed transfer is deposited first, so a deposit and a spend fit in one transaction.
+The main contract is scETC, a ledger of wrapped ETC that only leanSPHINCS keys can move. You deposit ETC to a key. From then on every transfer or withdrawal is a message signed by that key, which anyone can submit. The key can sign a fee for whoever submits it, so a holder doesn't need an ECDSA account or any ETC of their own. ETC sent along with a signed transfer is deposited first, so a deposit and a spend fit in one transaction.
 
-Each key shows up as an ordinary 20-byte address, the last 20 bytes of `keccak256(0x10 ‖ PK.seed ‖ PK.root)`. `0x10` is the scheme byte [EIP-8288](https://eips.ethereum.org/EIPS/eip-8288) gives leanSPHINCS. No ECDSA key controls these addresses. pqETC has the ERC-20 read functions and `Transfer` events, so explorers and wallets can show balances, but it has no `transfer` by `msg.sender`, since that would bring ECDSA back.
+Each key shows up as an ordinary 20-byte address, the last 20 bytes of `keccak256(0x10 ‖ PK.seed ‖ PK.root)`. `0x10` is the scheme byte [EIP-8288](https://eips.ethereum.org/EIPS/eip-8288) gives leanSPHINCS. No ECDSA key controls these addresses. scETC has the ERC-20 read functions and `Transfer` events, so explorers and wallets can show balances, but it has no `transfer` by `msg.sender`, since that would bring ECDSA back.
 
 There's also a contract wallet ([src/LeanSphincsWallet.sol](src/LeanSphincsWallet.sol)) for keys that need to call other contracts. Its only owner check is the same leanSPHINCS signature.
 
@@ -27,7 +27,7 @@ sequenceDiagram
     autonumber
     actor Alice
     participant AW as Alice's browser wallet (pays gas)
-    participant L as pqETC
+    participant L as scETC
     participant V as leanSPHINCS verifier
     actor Bob as Bob (no ETC)
     participant R as Relayer (any account)
@@ -35,10 +35,10 @@ sequenceDiagram
 
     Alice->>Alice: sign "0.4 to Bob" with her leanSPHINCS key
     AW->>L: transfer, with 1 ETC attached
-    L->>L: credit 1 pqETC to Alice
+    L->>L: credit 1 scETC to Alice
     L->>V: verify Alice's signature
     V-->>L: valid
-    L->>L: move 0.4 pqETC to Bob, emit the memo
+    L->>L: move 0.4 scETC to Bob, emit the memo
 
     Bob->>Bob: sign "0.1 to Alice, fee 0.001"
     Bob->>R: send the signed message off chain
@@ -85,7 +85,7 @@ The cost is that no EVM verifier existed for it, so we wrote our own, [src/LeanS
 
 ## Current Limitations
 
-The funds are quantum-secure, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move pqETC, change the call, or replay the signature, because the contract checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
+The funds are quantum-secure, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move scETC, change the call, or replay the signature, because the contract checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
 
 Ethereum's answer is the frame transaction, [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141), a draft from 2026-01-29 with transaction type `0x06`. Its abstract says it
 
@@ -97,7 +97,7 @@ Other limits today:
 
 - Nothing here is audited.
 - Each signature is 7,740 bytes, so a send costs about 290,000 gas, around 14 times a plain transfer.
-- All pqETC sits in one contract, so a bug there affects every holder.
+- All scETC sits in one contract, so a bug there affects every holder.
 - leanSPHINCS isn't final. A new version means a new verifier and a new ledger.
 - The web app keeps keys in the browser's local storage, which suits small amounts only.
 

@@ -4,13 +4,13 @@ Source copy for the section on pq.classix.dev, and for the write-up. Everything 
 
 ## What We Do Today
 
-ETC has no way for an account to pay its own gas with anything but an ECDSA signature, so pqETC uses meta-transactions.
+ETC has no way for an account to pay its own gas with anything but an ECDSA signature, so scETC uses meta-transactions.
 
-1. Bob signs a pqETC transfer with his leanSPHINCS key. The message covers the recipient, the amount, a fee, a nonce, a deadline and the chain.
+1. Bob signs a scETC transfer with his leanSPHINCS key. The message covers the recipient, the amount, a fee, a nonce, a deadline and the chain.
 2. A relayer puts that message in an ordinary transaction, signs the transaction with its own ECDSA key and pays the gas.
-3. pqETC checks Bob's signature, moves his balance and pays the relayer the fee Bob signed for.
+3. scETC checks Bob's signature, moves his balance and pays the relayer the fee Bob signed for.
 
-It works on ETC today, with no fork. It needs three things we'd rather not have. Someone has to run a relayer. An ECDSA key sits in the path, although it only risks its own gas money. And Bob holds pqETC in a wrapper contract, not ETC in his own account.
+It works on ETC today, with no fork. It needs three things we'd rather not have. Someone has to run a relayer. An ECDSA key sits in the path, although it only risks its own gas money. And Bob holds scETC in a wrapper contract, not ETC in his own account.
 
 ## With Frame Transactions
 
@@ -29,19 +29,19 @@ The meta-transaction case is built in too. If Bob has no ETC for gas, a paymaste
 
 The [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop) sends exactly this kind of transaction on the Daisugi research testnet, a VERIFY frame that checks a leanSPHINCS signature followed by a SENDER frame with the transfer.
 
-A later draft, [EIP-8288](https://eips.ethereum.org/EIPS/eip-8288), goes further. Block builders would replace the leanSPHINCS signatures in a block with one aggregate proof, so each signature costs about 3,000 gas on chain instead of carrying 7,740 bytes. It gives leanSPHINCS the scheme byte `0x10`, which pqETC already uses to derive its addresses.
+A later draft, [EIP-8288](https://eips.ethereum.org/EIPS/eip-8288), goes further. Block builders would replace the leanSPHINCS signatures in a block with one aggregate proof, so each signature costs about 3,000 gas on chain instead of carrying 7,740 bytes. It gives leanSPHINCS the scheme byte `0x10`, which scETC already uses to derive its addresses.
 
 ## What ETC Would Need
 
-Frame transactions change what makes a transaction valid, so ETC would need an ECIP and a hard fork. EIP-8141 is a draft and still changes, and its fee fields follow EIP-1559, which ETC doesn't have yet. [ECIP-1120](https://github.com/orgs/ethereumclassic/discussions/541) proposes a basefee market for ETC. Until then, meta-transactions are how ETC can do this, and pqETC is the demo.
+Frame transactions change what makes a transaction valid, so ETC would need an ECIP and a hard fork. EIP-8141 is a draft and still changes, and its fee fields follow EIP-1559, which ETC doesn't have yet. [ECIP-1120](https://github.com/orgs/ethereumclassic/discussions/541) proposes a basefee market for ETC. Until then, meta-transactions are how ETC can do this, and scETC is the demo.
 
 ## Side by Side
 
-| | pqETC today | frame transactions |
+| | scETC today | frame transactions |
 |---|---|---|
 | fork needed | no | yes, an ECIP |
 | who submits | a relayer | anyone, or Bob |
 | ECDSA in the path | the relayer's key, gas money only | none |
-| what Bob holds | pqETC, wrapped ETC | ETC in his own account |
+| what Bob holds | scETC, wrapped ETC | ETC in his own account |
 | gas paid by | the relayer, repaid from Bob's fee | Bob's account, or a paymaster |
 | signature on chain | 7,740 bytes in calldata | 7,740 bytes, or an aggregate proof with EIP-8288 |
