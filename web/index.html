@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quantum-Secure Transactions on Ethereum Classic · Classix</title>
+    <meta
+      name="description"
+      content="Make a leanSPHINCS key in your browser and send ETC from a smart contract wallet that only that key controls."
+    />
+    <meta name="theme-color" content="#000000" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Michroma&family=Space+Grotesk:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="nav-pill">
+        <a class="brand" href="https://classix.dev" title="Classix">
+          <svg class="mark" viewBox="-309.02 0 618.03 1000" aria-hidden="true">
+            <g fill="currentColor">
+              <path d="M0 0 295.37 449.66 0 323.81-295.37 449.66Z" />
+              <path d="M0 384.58 309.02 516.33 0 684.35-309.02 516.33Z" />
+              <path d="M-300.83 585.94 0 756.46 300.83 585.94 0 1000Z" />
+            </g>
+          </svg>
+          <span class="wordmark">classix</span>
+        </a>
+        <span class="brand-sub">pq</span>
+        <div class="nav-right">
+          <select id="network" class="net-select" aria-label="Network"></select>
+          <span id="network-label" class="pill"></span>
+          <button id="connect-top" class="btn-primary btn-small" type="button">Connect Wallet</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="section-label">Post-Quantum Wallet <span id="hero-net"></span></p>
+        <h1>Quantum-Secure Transactions on Ethereum Classic</h1>
+        <p class="lede">
+          Make a leanSPHINCS key in your browser and use it to send ETC from a smart contract wallet that only that key
+          controls. Your usual web3 wallet pays the gas and submits the transaction. It can't move the funds.
+        </p>
+        <div class="notice" role="note">
+          <strong>Research software.</strong> Nothing here is audited. Your key sits in this browser's local storage as a
+          demo hot key. Use small amounts.
+        </div>
+        <details id="selftest" class="selftest">
+          <summary><span class="dot" id="selftest-dot"></span><span id="selftest-label">Self-tests running</span></summary>
+          <ul id="selftest-list"></ul>
+        </details>
+      </section>
+
+      <section class="grid">
+        <!-- 1. Key -->
+        <article class="card" id="card-key">
+          <div class="card-head"><span class="num">01</span><h2>Your leanSPHINCS Key</h2></div>
+
+          <div id="key-none">
+            <p class="muted">
+              No key in this browser yet. Create a new one, or import the 24-word phrase of a key you made here before.
+            </p>
+            <div class="row">
+              <button id="key-create" class="btn-primary" type="button">Create Key</button>
+              <button id="key-import-open" class="btn-secondary" type="button">Import Phrase</button>
+            </div>
+          </div>
+
+          <div id="key-import" hidden>
+            <label class="field">
+              <span>Backup phrase</span>
+              <textarea id="key-phrase-in" rows="4" spellcheck="false" autocomplete="off" placeholder="24 words"></textarea>
+            </label>
+            <p class="error" id="key-import-error" hidden></p>
+            <div class="row">
+              <button id="key-import-go" class="btn-primary" type="button">Use Phrase</button>
+              <button id="key-import-cancel" class="btn-secondary" type="button">Cancel</button>
+            </div>
+          </div>
+
+          <div id="key-busy" hidden>
+            <p class="muted" id="key-busy-label">Deriving the public key</p>
+            <div class="bar"><div id="key-bar"></div></div>
+          </div>
+
+          <div id="key-have" hidden>
+            <dl class="kv">
+              <dt>Public key</dt>
+              <dd class="mono break" id="key-pk"></dd>
+              <dt>Scheme</dt>
+              <dd>leanSPHINCS, EthLib spec, Keccak-256</dd>
+            </dl>
+            <details class="backup" id="key-backup">
+              <summary>Show Backup Phrase</summary>
+              <ol class="words" id="key-words"></ol>
+              <button id="key-copy-phrase" class="btn-secondary btn-small" type="button">Copy Phrase</button>
+            </details>
+            <p class="warn">
+              This is a demo hot key. Anyone with access to this browser profile can read it. Never type the phrase of a
+              real wallet into this page.
+            </p>
+            <div class="row">
+              <button id="key-replace" class="btn-secondary btn-small" type="button">Import Another</button>
+              <button id="key-forget" class="btn-secondary btn-small danger" type="button">Forget Key</button>
+            </div>
+          </div>
+        </article>
+
+        <!-- 2. PQ wallet -->
+        <article class="card" id="card-wallet">
+          <div class="card-head"><span class="num">02</span><h2>Quantum-Secure Wallet</h2></div>
+          <p class="muted" id="wallet-none">Create or import a key to see its wallet.</p>
+          <div id="wallet-have" hidden>
+            <dl class="kv">
+              <dt>Address</dt>
+              <dd>
+                <span class="mono break" id="wallet-address"></span>
+                <span class="links">
+                  <button id="wallet-copy" class="link" type="button">Copy</button>
+                  <a id="wallet-explorer" class="link" target="_blank" rel="noopener noreferrer">Blockscout</a>
+                </span>
+              </dd>
+              <dt>Balance</dt>
+              <dd><span id="wallet-balance" class="big">…</span></dd>
+              <dt>Contract</dt>
+              <dd id="wallet-deployed">…</dd>
+              <dt>Nonce</dt>
+              <dd id="wallet-nonce" class="mono">…</dd>
+            </dl>
+            <p class="muted small">
+              The address comes from your public key through CREATE2, so it can receive ETC before the contract exists.
+              Your first send creates it.
+            </p>
+            <div class="row">
+              <button id="wallet-refresh" class="btn-secondary btn-small" type="button">Refresh</button>
+            </div>
+            <p class="error" id="wallet-error" hidden></p>
+          </div>
+        </article>
+
+        <!-- 3. Web3 wallet -->
+        <article class="card" id="card-web3">
+          <div class="card-head"><span class="num">03</span><h2>Gas Wallet</h2></div>
+          <p class="muted small">
+            Any browser wallet works. It pays the gas and submits the transaction, and it has no power over the
+            quantum-secure wallet.
+          </p>
+          <div id="web3-none">
+            <div id="web3-providers" class="providers"></div>
+            <p class="muted" id="web3-empty" hidden>
+              No browser wallet found. Install one such as MetaMask, then reload this page.
+            </p>
+          </div>
+          <div id="web3-have" hidden>
+            <dl class="kv">
+              <dt>Wallet</dt>
+              <dd id="web3-name"></dd>
+              <dt>Account</dt>
+              <dd class="mono break" id="web3-account"></dd>
+              <dt>Balance</dt>
+              <dd id="web3-balance">…</dd>
+            </dl>
+            <h3>Fund the Quantum-Secure Wallet</h3>
+            <div class="row inputs">
+              <label class="field grow">
+                <span>Amount (<span class="sym"></span>)</span>
+                <input id="fund-amount" inputmode="decimal" autocomplete="off" />
+              </label>
+              <button id="fund-go" class="btn-primary" type="button">Send to Wallet</button>
+            </div>
+            <p class="status" id="fund-status" hidden></p>
+          </div>
+        </article>
+
+        <!-- 4. Send -->
+        <article class="card" id="card-send">
+          <div class="card-head"><span class="num">04</span><h2>Send With a leanSPHINCS Signature</h2></div>
+          <label class="field">
+            <span>Recipient</span>
+            <input id="send-to" class="mono" placeholder="0x…" spellcheck="false" autocomplete="off" />
+          </label>
+          <div class="row inputs">
+            <label class="field grow">
+              <span>Amount (<span class="sym"></span>)</span>
+              <input id="send-amount" inputmode="decimal" autocomplete="off" />
+            </label>
+            <button id="send-go" class="btn-primary" type="button" disabled>Sign and Send</button>
+          </div>
+          <p class="muted small" id="send-hint"></p>
+          <ol class="stepper" id="stepper"></ol>
+        </article>
+      </section>
+
+      <section class="how" id="how">
+        <p class="section-label">Under the Hood</p>
+        <h2>How It Works</h2>
+        <div class="how-grid">
+          <div>
+            <h3>The Key</h3>
+            <p>
+              leanSPHINCS is a stateless hash-based signature from the SPHINCS+ family. We follow the
+              <a href="https://github.com/ethereum/EthLib/pull/152" target="_blank" rel="noopener noreferrer">EthLib spec</a>
+              with Keccak-256 as the hash. Its security rests on the hash function alone, with no elliptic curves for a
+              quantum computer to attack. The public key is 32 bytes, a signature is 7,740 bytes, and one key can sign
+              2<sup>30</sup> times without keeping any state.
+            </p>
+          </div>
+          <div>
+            <h3>The Wallet</h3>
+            <p>
+              A factory deploys one small wallet contract per public key, at an address fixed in advance by CREATE2.
+              The wallet's only owner check is a leanSPHINCS signature, which a verifier contract checks on chain for
+              about 82,000 gas. ETC needs no fork for this. The verifier is ordinary contract code.
+            </p>
+          </div>
+          <div>
+            <h3>The Message</h3>
+            <p>
+              Your key signs a hash of the chain ID, the wallet address, the wallet's nonce, the recipient, the amount,
+              the calldata and a deadline one hour out. A signature can't be replayed on another chain, against another
+              wallet or a second time.
+            </p>
+          </div>
+          <div>
+            <h3>The Gas Wallet</h3>
+            <p>
+              ETC has no account abstraction, so an ordinary account has to submit the call and pay for it. Its ECDSA key
+              is as vulnerable to a quantum computer as any other. Someone who broke it could spend that account's gas
+              money and nothing else, because the wallet only obeys the leanSPHINCS signature.
+            </p>
+          </div>
+          <div>
+            <h3>Checks in This Page</h3>
+            <p>
+              Before you send, the page verifies the signature in JavaScript, then asks the deployed verifier with an
+              <code>eth_call</code>, then simulates the whole transaction. On load it checks the chain ID, compares the
+              verifier's code hash with our build and runs EthLib's test vectors through both verifiers.
+            </p>
+          </div>
+          <div>
+            <h3>What It Costs</h3>
+            <p>
+              A first send creates the wallet and uses about 395,000 gas. Later sends use about 265,000, plus 25,000
+              when the recipient is a new account. Most of it pays for the 7,740 bytes of signature in calldata and
+              for verifying it on chain.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <div>
+          <h2 class="credits-title">Credits</h2>
+          <ul class="credits">
+            <li>
+              <a href="https://github.com/nconsigny/SPHINCS-" target="_blank" rel="noopener noreferrer">SPHINCS-</a> by
+              Nicolas Consigny, the on-chain leanSPHINCS verifier
+            </li>
+            <li>
+              <a href="https://sphincs.art" target="_blank" rel="noopener noreferrer">sphincs.art</a> by Tom Wambsgans, the
+              leanSPHINCS design, with the spec note and Lean proofs in
+              <a href="https://github.com/TomWambsgans/sphincs.art" target="_blank" rel="noopener noreferrer"
+                >TomWambsgans/sphincs.art</a
+              >
+            </li>
+            <li>
+              <a href="https://github.com/ethereum/EthLib/pull/152" target="_blank" rel="noopener noreferrer"
+                >EthLib leanSPHINCS spec</a
+              >, the normative Lean module we follow
+            </li>
+            <li>
+              <a href="https://github.com/alessandrobaiocchi/Devcon_Workshop" target="_blank" rel="noopener noreferrer"
+                >Devcon_Workshop</a
+              >
+              by Alessandro Baiocchi, whose flow inspired this page
+            </li>
+            <li>
+              <a href="https://github.com/RivaLabs-Core/Post-Quantum-AA-Infra" target="_blank" rel="noopener noreferrer"
+                >Post-Quantum-AA-Infra</a
+              >
+              by RivaLabs
+            </li>
+          </ul>
+        </div>
+        <div class="footer-end">
+          <a class="brand small-brand" href="https://classix.dev">
+            <svg class="mark" viewBox="-309.02 0 618.03 1000" aria-hidden="true">
+              <g fill="currentColor">
+                <path d="M0 0 295.37 449.66 0 323.81-295.37 449.66Z" />
+                <path d="M0 384.58 309.02 516.33 0 684.35-309.02 516.33Z" />
+                <path d="M-300.83 585.94 0 756.46 300.83 585.94 0 1000Z" />
+              </g>
+            </svg>
+            <span class="wordmark">classix</span>
+          </a>
+          <p class="muted small">Built by <a href="https://classix.dev">Classix</a> for Ethereum Classic. &copy; Classix 2026</p>
+        </div>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
