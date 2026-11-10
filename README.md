@@ -66,7 +66,8 @@ We use leanSPHINCS as [EthLib](https://github.com/ethereum/EthLib) specifies it 
 | public key | 32 bytes, `PK.seed ‖ PK.root` |
 | signature | 7,740 bytes |
 | lifetime | 2^30 signatures per key, no state kept by the signer |
-| verification | 515 Keccak-f permutations, about 86,000 gas |
+| verification | 515 Keccak-f permutations, about 86,000 gas, plus about 123,000 gas of calldata for the signature |
+| security | EthLib's proof gives 127 bits up to 2^30 signatures. Against a quantum computer, Grover's algorithm leaves about 2^64 steps on 16-byte hashes, NIST level 1, the bar AES-128 sets |
 
 ### Why We Follow the Current Spec
 
