@@ -171,6 +171,160 @@ const shownBalance = (page, who) => page.textContent(tid(`${who}-balance`));
 const waitBalance = (page, who, text) =>
   page.waitForFunction(([s, t]) => document.querySelector(s)?.textContent === t, [tid(`${who}-balance`), text], { timeout: 30_000 });
 
+// ---------------------------------------------------------------------------
+// How It Works: the courier cat plays the diagram once it scrolls into view.
+// ---------------------------------------------------------------------------
+
+const how = {
+  fig: tid("how-figure"),
+  step: (page) => page.getAttribute(tid("how-figure"), "data-step").then(Number),
+  caption: (page) => page.textContent(tid("how-caption")),
+  /** Animations running inside the diagram. */
+  running: (page) =>
+    page.evaluate((s) => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.target?.closest?.(s)).length, tid("how-figure")),
+};
+
+/** Scrolls the diagram so the given row sits mid-screen, with the sticky header and player clear of it. */
+async function howScrollTo(page, n) {
+  await page.evaluate((s) => {
+    const r = document.querySelector(s).getBoundingClientRect();
+    window.scrollBy({ top: r.top + r.height / 2 - innerHeight * 0.55, behavior: "instant" });
+  }, tid(`how-step-${n}`));
+}
+
+/**
+ * Freezes the diagram at fraction t of step n's run and takes a screenshot. Timers are on a fake
+ * clock so the player waits, and every animation is paused at the same point of its own run.
+ */
+async function howFrame(page, n, t, path, clip) {
+  const fresh = (await how.step(page)) !== n || (await page.getAttribute(how.fig, "data-arrived")) === "1";
+  if (fresh) {
+    if ((await page.getAttribute(how.fig, "data-playing")) === "1") await page.click(tid("how-play"));
+    if (n === 1) {
+      await page.click(tid("how-replay"));
+      await page.click(tid("how-play"));
+    } else {
+      // Land on step n - 1, then step into n so its run starts now.
+      while ((await how.step(page)) > n - 1) await page.click(tid("how-prev"));
+      while ((await how.step(page)) < n - 1) await page.click(tid("how-next"));
+      await page.click(tid("how-next"));
+    }
+  }
+  if (t >= 1) await page.clock.runFor(4000);
+  await page.evaluate((t) => {
+    for (const a of document.getAnimations()) {
+      const { duration, iterations } = a.effect.getTiming();
+      a.pause();
+      // Once arrived, everything is done except the delivery ping and the balance chip, caught mid-pop.
+      const at = t < 1 ? t : /^how-(ping|pop)$/.test(a.animationName) ? 0.3 : 0.999;
+      a.currentTime = iterations === 1 && Number.isFinite(duration) ? duration * Math.min(at, 0.999) : at * 1000;
+    }
+  }, t);
+  await page.waitForTimeout(40);
+  const box = clip ? await clip() : undefined;
+  await page.screenshot({ path, clip: box });
+}
+
+async function howItWorks(browser) {
+  // Autoplay, the controls and a clean console, on the real timers.
+  for (const vp of [DESKTOP, MOBILE]) {
+    const tag = vp === DESKTOP ? "desktop" : "mobile";
+    const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: vp.width < 500 ? 2 : 1 });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, `how ${tag}`);
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("steps")}[data-live="1"]`, { timeout: 30_000 });
+    check((await how.step(page)) === 0, `how ${tag}: the diagram waits at rest above the fold`);
+    check((await page.$$(`${how.fig} ${tid("how-cat")}`)).length === 0, `how ${tag}: no cat before it plays`);
+    await page.locator(how.fig).scrollIntoViewIfNeeded();
+    await page.waitForSelector(`${how.fig}[data-playing="1"]`, { timeout: 5000 });
+    await page.waitForFunction((s) => Number(document.querySelector(s)?.dataset.step) >= 3, how.fig, { timeout: 15_000 });
+    check(true, `how ${tag}: autoplays when scrolled to, now at step ${await how.step(page)}`);
+    check((await how.running(page)) > 0, `how ${tag}: the cat is moving (${await how.running(page)} animations)`);
+    check((await page.getAttribute(tid("how-caption"), "aria-live")) === "polite", `how ${tag}: the caption is a polite live region`);
+
+    await page.click(tid("how-play"));
+    check((await page.getAttribute(how.fig, "data-playing")) === "0", `how ${tag}: pause stops it`);
+    const at = await how.step(page);
+    const c0 = await how.caption(page);
+    await page.click(tid("how-next"));
+    const c1 = await how.caption(page);
+    check((await how.step(page)) === at + 1 && c1 !== c0 && c1.includes(`Step ${at + 1} of 16.`), `how ${tag}: next moves to step ${at + 1}`);
+    await page.click(tid("how-prev"));
+    check((await how.caption(page)) === c0, `how ${tag}: previous goes back to step ${at}`);
+    // Keyboard: the controls are real buttons.
+    await page.focus(tid("how-next"));
+    await page.keyboard.press("Enter");
+    check((await how.step(page)) === at + 1, `how ${tag}: Enter on Next steps forward`);
+    await page.click(tid("how-speed"));
+    check((await page.getAttribute(tid("how-speed"), "aria-pressed")) === "true", `how ${tag}: speed toggles`);
+    await page.click(tid("how-replay"));
+    check((await how.step(page)) === 1 && (await page.getAttribute(how.fig, "data-playing")) === "1", `how ${tag}: replay starts over`);
+    await page.waitForFunction((s) => document.querySelector(s)?.dataset.step === "16" && document.querySelector(s)?.dataset.playing === "0", how.fig, {
+      timeout: 40_000,
+    });
+    const bal = await page.$$eval(`${how.fig} [data-testid^="how-bal-"]`, (l) => [...new Set(l.filter((e) => e.offsetParent).map((e) => `${e.dataset.testid.slice(8)} ${e.dataset.value}`))]);
+    check(["alice 0.7", "bob 0.098", "relayer 0.002", "fresh 0.2"].every((b) => bal.includes(b)), `how ${tag}: plays to the end and stops, balances ${bal.join(", ")}`);
+    const sw = await page.evaluate(() => document.documentElement.scrollWidth);
+    check(sw <= vp.width, `how ${tag}: page is ${sw}px wide`);
+    await ctx.close();
+  }
+
+  // Reduced motion: no autoplay, no running, the cat stands at the step.
+  {
+    const ctx = await browser.newContext({ viewport: DESKTOP, reducedMotion: "reduce" });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, "how reduced");
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("steps")}[data-live="1"]`, { timeout: 30_000 });
+    await page.locator(how.fig).scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1500);
+    check((await how.step(page)) === 0 && (await page.getAttribute(how.fig, "data-reduced")) === "1", "how reduced: no autoplay");
+    check(!(await page.$(tid("how-play"))) && !(await page.$(tid("how-speed"))), "how reduced: step-through controls only");
+    for (let i = 0; i < 4; i++) await page.click(tid("how-next"));
+    await page.waitForTimeout(300);
+    check((await how.step(page)) === 4, "how reduced: next steps through");
+    check((await page.getAttribute(`${how.fig} ${tid("how-cat")}`, "data-mode")) === "stand", "how reduced: the cat stands at the step");
+    check((await how.running(page)) === 0, `how reduced: no animation runs (${await how.running(page)})`);
+    await howScrollTo(page, 4);
+    await page.screenshot({ path: `${SHOTS}how-desktop-reduced-step04.png` });
+    await ctx.close();
+  }
+
+  // Frames, on a fake clock so the player holds still for the camera.
+  for (const vp of [DESKTOP, MOBILE]) {
+    const tag = vp === DESKTOP ? "desktop" : "mobile";
+    const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 2 });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, `how frames ${tag}`);
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("selftest")}[data-state-result]`, { timeout: 60_000 });
+    // The fake clock goes in once the page has settled. The player's timers are made after this.
+    await page.clock.install();
+    await page.locator(how.fig).scrollIntoViewIfNeeded();
+    const stills = tag === "desktop" ? [[1, 0.5], [2, 0.55], [5, 0.5], [9, 0.45], [12, 1], [16, 1]] : [[2, 0.5], [7, 0.5], [12, 0.6], [16, 1]];
+    for (const [n, t] of stills) {
+      await howScrollTo(page, n);
+      await howFrame(page, n, t, `${SHOTS}how-${tag}-step${String(n).padStart(2, "0")}.png`);
+    }
+    // A run in eight frames: step 12, the fee on its way to the relayer, ending with the chip update.
+    await howScrollTo(page, 12);
+    const clip =
+      tag === "desktop"
+        ? async () => {
+            const r = await page.locator(tid("how-step-12")).boundingBox();
+            return { x: r.x, y: r.y - 24, width: r.width, height: r.height + 48 };
+          }
+        : async () => page.locator(tid("how-lane")).boundingBox().then((r) => ({ x: r.x - 8, y: r.y - 4, width: r.width + 16, height: r.height + 8 }));
+    const ts = [0.02, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1];
+    for (const [i, t] of ts.entries()) await howFrame(page, 12, t, `${SHOTS}how-${tag}-run-${i + 1}.png`, clip);
+    await ctx.close();
+  }
+}
+
 const browser = await chromium.launch();
 try {
   // 0. With JavaScript off, the pre-rendered page still reads.
@@ -183,6 +337,8 @@ try {
     await page.screenshot({ path: `${SHOTS}desktop-0-no-js.png`, fullPage: true });
     await ctx.close();
   }
+
+  await howItWorks(browser);
 
   const { page } = await newPage(browser);
   check(!/wallet/i.test(await page.title()), `title: ${await page.title()}`);

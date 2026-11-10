@@ -244,6 +244,170 @@
   }
 }
 
+/* The How It Works courier. Same rule as the cats above, each base style is where the move ends.
+   --how-d is the length of the current step's run, set per step and per speed. */
+.how-run-r,
+.how-at-r {
+  transform: translateX(100%);
+}
+.how-run-l,
+.how-at-l {
+  transform: translateX(0);
+}
+.how-run-r,
+.how-run-l {
+  will-change: transform;
+}
+.how-run-r {
+  animation: how-run-r var(--how-d, 1s) cubic-bezier(0.45, 0.05, 0.35, 1) both;
+}
+.how-run-l {
+  animation: how-run-l var(--how-d, 1s) cubic-bezier(0.45, 0.05, 0.35, 1) both;
+}
+@keyframes how-run-r {
+  from {
+    transform: translateX(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+}
+@keyframes how-run-l {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+}
+.how-lit {
+  transform: scaleX(1);
+  animation: how-lit var(--how-d, 1s) cubic-bezier(0.45, 0.05, 0.35, 1) both;
+}
+@keyframes how-lit {
+  from {
+    transform: scaleX(0);
+  }
+}
+.how-gallop {
+  animation: how-gallop 0.16s ease-in-out infinite alternate;
+}
+@keyframes how-gallop {
+  to {
+    transform: translateY(-1.6px);
+  }
+}
+.how-leg {
+  transform-box: fill-box;
+  transform-origin: 50% 0;
+}
+.how-leg-a {
+  animation: how-leg 0.16s ease-in-out infinite alternate;
+}
+.how-leg-b {
+  animation: how-leg 0.16s ease-in-out infinite alternate-reverse;
+}
+@keyframes how-leg {
+  from {
+    transform: rotate(32deg);
+  }
+  to {
+    transform: rotate(-32deg);
+  }
+}
+.how-tail {
+  transform-box: fill-box;
+  transform-origin: 100% 100%;
+  animation: how-tail 0.5s ease-in-out infinite alternate;
+}
+@keyframes how-tail {
+  from {
+    transform: rotate(-7deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+.how-nod {
+  animation: how-nod 0.36s ease-in-out infinite alternate;
+}
+@keyframes how-nod {
+  to {
+    transform: translateY(1px);
+  }
+}
+.how-act .how-pencil {
+  animation: how-scribble 0.22s ease-in-out infinite alternate;
+}
+@keyframes how-scribble {
+  from {
+    transform: translate(-2.5px, 0.6px);
+  }
+  to {
+    transform: translate(2px, -0.4px);
+  }
+}
+.how-act .how-stamp {
+  animation: how-stamp 0.75s cubic-bezier(0.5, 0, 0.6, 1) infinite;
+}
+@keyframes how-stamp {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  45% {
+    transform: translateY(4px);
+  }
+  60% {
+    transform: translateY(4px);
+  }
+}
+.how-pop-in {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: how-pop-in 0.45s cubic-bezier(0.3, 1.5, 0.6, 1) 0.1s both;
+}
+@keyframes how-pop-in {
+  from {
+    transform: translateY(5px) scale(0.2);
+    opacity: 0;
+  }
+}
+.how-appear {
+  animation: how-appear 0.25s ease-out both;
+}
+@keyframes how-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.how-ping {
+  opacity: 0;
+  animation: how-ping 0.7s ease-out;
+}
+@keyframes how-ping {
+  from {
+    opacity: 1;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+.how-pop {
+  animation: how-pop 0.7s ease-out;
+}
+@keyframes how-pop {
+  from {
+    transform: scale(1.18);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-cyan) 45%, transparent);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cat-anim,
   .cat-glide,
