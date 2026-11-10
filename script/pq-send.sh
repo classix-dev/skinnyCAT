@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 # Send ETC out of a LeanSphincsWallet with a leanSPHINCS signature.
 #
-#   script/pq-send.sh <rpc-url> <seed-file> <to> <value-in-ether> [relayer-key-file]
+#   [MESSAGE="text"] script/pq-send.sh <rpc-url> <seed-file> <to> <value-in-ether> [relayer-key-file]
+#
+# MESSAGE, if set, goes on chain as the UTF-8 calldata of the call to <to>, covered by the
+# leanSPHINCS signature. Send it to an account without code, so the calldata is only a message.
 #
 # <seed-file> holds the 32-byte leanSPHINCS seed as 0x-hex. The relayer key (an ordinary
 # ECDSA key) only pays gas and submits the transaction. Without it, the script prints the
@@ -27,11 +30,12 @@ if [ "$(cast code "$WALLET" --rpc-url "$RPC")" = "0x" ]; then DEPLOYED=0 NONCE=0
 else DEPLOYED=1 NONCE=$(cast call "$WALLET" "nonce()(uint256)" --rpc-url "$RPC"); fi
 VALUE=$(cast to-wei "$VALUE_ETH")
 DEADLINE=$(( $(date +%s) + 3600 ))
-DATA=0x
+DATA=$(cast from-utf8 "${MESSAGE:-}")
 
 echo "chain     $CHAIN_ID"
 echo "wallet    $WALLET (deployed=$DEPLOYED nonce=$NONCE balance=$(cast balance --ether "$WALLET" --rpc-url "$RPC"))"
 echo "to        $TO value=$VALUE_ETH deadline=$DEADLINE"
+[ -n "${MESSAGE:-}" ] && echo "message   \"$MESSAGE\" ($(( (${#DATA} - 2) / 2 )) bytes of calldata)"
 
 MSG=$(cast keccak "$(cast abi-encode "f(bytes32,uint256,address,uint256,address,uint256,bytes32,uint256)" \
   "$TAG" "$CHAIN_ID" "$WALLET" "$NONCE" "$TO" "$VALUE" "$(cast keccak $DATA)" "$DEADLINE")")
@@ -39,7 +43,7 @@ if [ "$DEPLOYED" = 1 ]; then
   ONCHAIN=$(cast call "$WALLET" "messageHash(address,uint256,bytes,uint256,uint256)(bytes32)" "$TO" "$VALUE" "$DATA" "$NONCE" "$DEADLINE" --rpc-url "$RPC")
   [ "$ONCHAIN" = "$MSG" ] || { echo "message hash mismatch: $ONCHAIN vs $MSG"; exit 1; }
 fi
-echo "message   $MSG"
+echo "digest    $MSG"
 
 echo "signing (a few seconds)..."
 OUT=$(python3 "$SIGNER" sign "$SEED" "$MSG")
