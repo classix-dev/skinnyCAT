@@ -2,16 +2,16 @@
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
-import {LeanSphincsLayeredAsm} from "../src/vendor/LeanSphincs-LayeredAsm.sol";
+import {LeanSphincsVerifier} from "../src/LeanSphincsVerifier.sol";
+import {LeanSphincsFFI} from "./utils/LeanSphincsFFI.sol";
 import {ILeanSphincsVerifier} from "../src/ILeanSphincsVerifier.sol";
 import {LeanSphincsLedger} from "../src/LeanSphincsLedger.sol";
 
 /// The demo story. Alice deposits ETC and pays Bob in one transaction. Bob has pqETC but no ETC,
 /// so his signed transfers go through a relayer, who takes the fee Bob signed for. Bob can
-/// withdraw to a fresh address that never held ETC. Signatures come from the Python reference
-/// signer over FFI, a few seconds each.
-contract LeanSphincsLedgerTest is Test {
-    string constant SIGNER = "script/vendor/leansphincs_layered_signer.py";
+/// withdraw to a fresh address that never held ETC. Signatures come from the TypeScript signer
+/// over FFI, a few seconds each.
+contract LeanSphincsLedgerTest is LeanSphincsFFI {
     string constant MEMO = "The first quantum-secure transaction on Ethereum Classic, by Classix.dev";
 
     LeanSphincsLedger ledger;
@@ -36,7 +36,7 @@ contract LeanSphincsLedgerTest is Test {
 
     function setUp() public {
         ledger = new LeanSphincsLedger(
-            ILeanSphincsVerifier(address(new LeanSphincsLayeredAsm())), "Post-Quantum ETC", "pqETC"
+            ILeanSphincsVerifier(address(new LeanSphincsVerifier())), "Post-Quantum ETC", "pqETC"
         );
         (aSeed, aRoot) = _keygen(aliceSeed);
         (bSeed, bRoot) = _keygen(bobSeed);
@@ -171,30 +171,4 @@ contract LeanSphincsLedgerTest is Test {
     }
 
     receive() external payable {}
-
-    // ------------------------------------------------------------------
-
-    function _sign(bytes32 seed, bytes32 digest) internal returns (bytes memory sig) {
-        string[] memory inputs = new string[](5);
-        inputs[0] = "python3";
-        inputs[1] = SIGNER;
-        inputs[2] = "sign";
-        inputs[3] = vm.toString(seed);
-        inputs[4] = vm.toString(digest);
-        (,, sig) = abi.decode(vm.ffi(inputs), (bytes32, bytes32, bytes));
-    }
-
-    function _keygen(bytes32 seed) internal returns (bytes32 s, bytes32 r) {
-        string[] memory kg = new string[](4);
-        kg[0] = "python3";
-        kg[1] = SIGNER;
-        kg[2] = "keygen";
-        kg[3] = vm.toString(seed);
-        bytes memory pk = vm.ffi(kg); // root ‖ P
-        assembly {
-            let w := mload(add(pk, 0x20))
-            r := shl(128, shr(128, w))
-            s := shl(128, w)
-        }
-    }
 }

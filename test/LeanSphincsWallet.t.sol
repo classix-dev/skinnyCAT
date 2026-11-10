@@ -2,16 +2,15 @@
 pragma solidity ^0.8.28;
 
 import "forge-std/Test.sol";
-import {LeanSphincsLayeredAsm} from "../src/vendor/LeanSphincs-LayeredAsm.sol";
+import {LeanSphincsVerifier} from "../src/LeanSphincsVerifier.sol";
+import {LeanSphincsFFI} from "./utils/LeanSphincsFFI.sol";
 import {ILeanSphincsVerifier} from "../src/ILeanSphincsVerifier.sol";
 import {LeanSphincsWallet} from "../src/LeanSphincsWallet.sol";
 import {LeanSphincsWalletFactory} from "../src/LeanSphincsWalletFactory.sol";
 
-/// Signatures come from the Python reference signer over FFI (a few seconds each), so each test
+/// Signatures come from the TypeScript signer over FFI (a few seconds each), so each test
 /// signs as little as it can and reuses one signature for the rejection cases.
-contract LeanSphincsWalletTest is Test {
-    string constant SIGNER = "script/vendor/leansphincs_layered_signer.py";
-
+contract LeanSphincsWalletTest is LeanSphincsFFI {
     ILeanSphincsVerifier verifier;
     LeanSphincsWalletFactory factory;
 
@@ -25,7 +24,7 @@ contract LeanSphincsWalletTest is Test {
     uint256 deadline;
 
     function setUp() public {
-        verifier = ILeanSphincsVerifier(address(new LeanSphincsLayeredAsm()));
+        verifier = ILeanSphincsVerifier(address(new LeanSphincsVerifier()));
         factory = new LeanSphincsWalletFactory(verifier);
         (pkSeed, pkRoot) = _keygen(seed);
         predicted = payable(factory.walletAddress(pkSeed, pkRoot));
@@ -92,7 +91,7 @@ contract LeanSphincsWalletTest is Test {
         vm.expectRevert(LeanSphincsWallet.BadSignature.selector);
         w.execute(recipient, 0.1 ether, "", deadline, bad);
 
-        // Another chain (ETH is 1, Mordor 63) rejects an ETC signature.
+        // Another chain (ETH is 1) rejects an ETC signature.
         uint256 chainBefore = vm.getChainId();
         vm.chainId(chainBefore == 61 ? 63 : 61);
         vm.expectRevert(LeanSphincsWallet.BadSignature.selector);
@@ -188,30 +187,10 @@ contract LeanSphincsWalletTest is Test {
         if (wallet.code.length != 0) {
             assertEq(m, LeanSphincsWallet(wallet).messageHash(to, value, data, nonce_, deadline), "messageHash");
         }
-        string[] memory inputs = new string[](5);
-        inputs[0] = "python3";
-        inputs[1] = SIGNER;
-        inputs[2] = "sign";
-        inputs[3] = vm.toString(seed);
-        inputs[4] = vm.toString(m);
-        (bytes32 s, bytes32 r, bytes memory out) = abi.decode(vm.ffi(inputs), (bytes32, bytes32, bytes));
+        bytes32 s;
+        bytes32 r;
+        (s, r, sig) = _signWithKey(seed, m);
         assertEq(s, pkSeed);
         assertEq(r, pkRoot);
-        sig = out;
-    }
-
-    function _keygen(bytes32 seed_) internal returns (bytes32 s, bytes32 r) {
-        string[] memory kg = new string[](4);
-        kg[0] = "python3";
-        kg[1] = SIGNER;
-        kg[2] = "keygen";
-        kg[3] = vm.toString(seed_);
-        bytes memory pk = vm.ffi(kg); // root ‖ P
-        require(pk.length == 32, "keygen output");
-        assembly {
-            let w := mload(add(pk, 0x20))
-            r := shl(128, shr(128, w))
-            s := shl(128, w)
-        }
     }
 }

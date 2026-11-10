@@ -1,0 +1,43 @@
+{
+ "key_gen": [
+  "key_gen_known_answer",
+  "key_gen_long_seed",
+  "key_gen_short_seed",
+  "key_gen_zero_seed"
+ ],
+ "sign": [
+  "sign_known_answer",
+  "sign_short_message",
+  "sign_short_seed",
+  "sign_zero_message",
+  "sign_zero_seed"
+ ],
+ "verify": [
+  "verify_long_signature",
+  "verify_other_key",
+  "verify_short_message",
+  "verify_short_public_key",
+  "verify_short_signature",
+  "verify_tampered_bottom_chain_value",
+  "verify_tampered_bottom_counter",
+  "verify_tampered_bottom_sibling",
+  "verify_tampered_fors_path_node",
+  "verify_tampered_fors_secret",
+  "verify_tampered_middle_chain_value",
+  "verify_tampered_middle_counter",
+  "verify_tampered_middle_sibling",
+  "verify_tampered_randomizer",
+  "verify_tampered_top_chain_value",
+  "verify_tampered_top_counter",
+  "verify_tampered_top_last_sibling",
+  "verify_tampered_top_sibling",
+  "verify_valid_known_answer",
+  "verify_valid_zero_message",
+  "verify_valid_zero_seed",
+  "verify_wrong_message",
+  "verify_wrong_pk_seed",
+  "verify_wrong_root",
+  "verify_zeroed_fors_secret",
+  "verify_zeroed_top_last_sibling"
+ ]
+}

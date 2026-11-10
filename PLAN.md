@@ -1,22 +1,22 @@
 # Plan
 
-The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. istora asked on 2026-11-10 for this to run on mainnet in production, and on the same day decided to skip the Mordor rehearsal. The full flow is tested on a local chain with ETC's rules instead. The design is in [README.md](README.md). It's a demo project, built for fun, and the site says so.
+The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. It's a proof of concept and an experiment, built for fun and not meant for real use, and the site says so. The design is in [README.md](README.md).
 
 ## What ETC Supports Today
 
-We checked Core-Geth's `params/config_classic.go` and `config_mordor.go` and queried both chains on 2026-11-10.
+We checked Core-Geth's `params/config_classic.go` and queried the chain on 2026-11-10.
 
-| | ETC mainnet | Mordor (checked, not used) |
-|---|---|---|
-| latest fork | Spiral (block 19,250,000) | Spiral (block 9,957,000) |
-| EVM target | Shanghai, no withdrawals | same |
-| `PUSH0`, `CREATE2` | yes | yes |
-| `MCOPY`, `TSTORE`, `TLOAD`, blobs | no | no |
-| tx types | 0 and 1 (no 1559, no 7702) | same |
-| block gas limit | 8,000,000 | 8,000,000 |
-| gas price | about 3.95 gwei | 1 gwei |
-| CREATE2 deployer `0x4e59b448...956c` | present | present |
-| ERC-4337 EntryPoint | not assumed | not assumed |
+| | ETC mainnet |
+|---|---|
+| latest fork | Spiral (block 19,250,000) |
+| EVM target | Shanghai, no withdrawals |
+| `PUSH0`, `CREATE2` | yes |
+| `MCOPY`, `TSTORE`, `TLOAD`, blobs | no |
+| tx types | 0 and 1 (no 1559, no 7702) |
+| block gas limit | 8,000,000 |
+| gas price | about 3.95 gwei |
+| CREATE2 deployer `0x4e59b448...956c` | present |
+| ERC-4337 EntryPoint | not assumed |
 
 Calldata costs 16 gas per non-zero byte (EIP-2028, Phoenix). ETC has no EIP-7623 calldata floor. The Daisugi workshop verifier needs Cancun because it uses `MCOPY` twice. It won't run on ETC as compiled. The EthLib-spec verifier we use needs no Cancun opcodes, so this doesn't block us.
 
@@ -24,71 +24,64 @@ Calldata costs 16 gas per non-zero byte (EIP-2028, Phoenix). ETC has no EIP-7623
 
 ### M0. Repo and Toolchain
 
-Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to a nixpkgs revision where Foundry builds, and the vendored verifier passing its 34 upstream tests.
+Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to a nixpkgs revision where Foundry builds, and a script that checks every contract's bytecode for opcodes Spiral doesn't have.
 
-### M1. Wallet Contracts
+### M1. Contracts
 
-Done 2026-11-10. 8 tests in [test/LeanSphincsWallet.t.sol](test/LeanSphincsWallet.t.sol) pass with signatures from the Python signer.
+Done 2026-11-10, on the 2026-11-03 version of the spec.
 
-- `LeanSphincsWallet` holds the 32-byte public key, a verifier address and a nonce. `execute(to, value, data, deadline, sig)` checks the signature over `keccak256(abi.encode(tag, chainid, wallet, nonce, to, value, keccak256(data), deadline))`, bumps the nonce and makes the call. Anyone can submit it.
-- `LeanSphincsWalletFactory` deploys wallets as EIP-1167 clones with `CREATE2`, salted by the public key, and initializes them in the same call so nobody can front-run the key setup.
-- Tests sign with the Python reference signer over FFI. They cover a valid transfer, replay, wrong chain, wrong wallet, tampering, and calls from a third party.
-- A script checks the runtime bytecode of every contract for opcodes Spiral doesn't have.
+- pqETC ([src/LeanSphincsLedger.sol](src/LeanSphincsLedger.sol)), the main contract. ETC deposited to a leanSPHINCS key, moved by signed messages anyone can relay for a fee the key signs, with a deposit and a spend in one transaction and a signed memo emitted as an event. Accounts are `keccak256(0x10 ‖ PK.seed ‖ PK.root)[12:]`. Its tests follow the demo, where Alice pays Bob and Bob, holding no ETC, pays back through a relayer and withdraws to a fresh address.
+- A contract wallet and its `CREATE2` factory ([src/LeanSphincsWallet.sol](src/LeanSphincsWallet.sol)), for keys that need to call other contracts.
 
 ### M2. Signer
 
-Done 2026-11-10 in [signer](signer). 44 tests pass, about 3.5 s per signature in Node and about 1.2 s in a browser worker.
+Done 2026-11-10 in [signer](signer), a TypeScript signer the CLI, the tests and the web app share, checked byte for byte against EthLib's vectors. About 3.5 s per signature in Node and 1.2 s in a browser worker.
 
-A TypeScript leanSPHINCS signer, ported from the Python reference and checked byte for byte against EthLib's vectors and the KAT fixture. The CLI and the web app both use it. The Python signer stays as the cross-check.
+### M3. The Current Spec
 
-### M3. Mainnet Deploy and the First Transaction
+Done 2026-11-10. 25 Foundry tests and 44 signer tests pass, every EthLib vector matches byte for byte, and a verify costs about 86,000 gas. EthLib moved leanSPHINCS to the FIPS 205 hash layout on 2026-11-08 ([#1555](https://github.com/ethereum/EthLib/commit/dce7a2de23a973d84eac38126a1527763cd3465d)), and no EVM verifier existed for it. We write [src/LeanSphincsVerifier.sol](src/LeanSphincsVerifier.sol), move the signer to the new layout, and check both against EthLib's new vectors. [README.md](README.md#why-we-follow-the-current-spec) gives the reasons.
 
-The first transaction carries the message "The first quantum-secure transaction on Ethereum Classic, by Classix.dev" as signed calldata. [script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy goes through the CREATE2 deployer and puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the two deploys and the first send come to about 0.0025 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract. Addresses and transaction hashes go in `docs/deployments.md`.
+### M4. Mainnet Deploy and the First Transaction
 
-### M4. pq.classix.dev
+Deploy the verifier, pqETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends pqETC to Bob in one transaction, with the memo "The first quantum-secure transaction on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
 
-Built in [web](web), with a Playwright test of the whole flow against a local anvil. It's being redesigned with its own identity, blue, React and Tailwind, with a "by Classix" mark as on etchd and Triforce. It runs on ETC mainnet only and goes live after M3.
+It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the deploys and the demo come to about 0.004 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract.
 
-The flow follows the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop).
+### M5. pq.classix.dev
 
-1. Generate a leanSPHINCS key in the browser and show the backup.
-2. Show the counterfactual wallet address so the user can fund it.
-3. Connect any injected web3 wallet (EIP-6963 discovery) on chain 61.
-4. Sign the transfer with leanSPHINCS in a Web Worker, verify it locally and with `eth_call`, then have the web3 wallet submit `execute`. On first use the same transaction creates the wallet through the factory.
-5. Show the receipt and a Blockscout link.
+Built in [web](web) and being redesigned with its own blue identity in React and Tailwind, a "by Classix" mark as on etchd and Triforce, and a title that doesn't call it a wallet. It says up front that it's a proof of concept and an experiment, not meant for real use.
 
-On load the page runs self-tests against the EthLib vectors and checks the deployed verifier's code hash, as the workshop does. It's a static site with no backend, served by a Cloudflare Worker with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev.
+The flow follows the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop), with Alice and Bob on one page.
 
-### M5. Write-Up
+1. Make two leanSPHINCS keys in the browser, Alice and Bob.
+2. Alice deposits ETC from a browser wallet and pays Bob in one transaction, with a message in a text box.
+3. Bob, who holds no ETC, signs a payment back, and the browser wallet relays it for Bob's fee.
+4. Each step shows the signature, the local and on-chain checks, the receipt and a Blockscout link.
+
+On load the page checks the deployed verifier's code hash and runs EthLib vectors through its own verifier. It's a static site with no backend, served by a Cloudflare Worker with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev. It also explains what's quantum-secure and what isn't, and links [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141).
+
+### M6. Write-Up
 
 A post for classix.dev covering what we did and how to check it, crediting the sources in [README.md](README.md). Publishing it needs istora's go.
 
-## Gas and Cost Estimates
+## Gas and Cost
 
-These are estimates from the Foundry measurement and EVM pricing. M1 replaces them with measured numbers.
+Measured in Foundry. The current-spec verifier adds about 4,000 gas per verify over the 2026-11-03 one these were taken with.
 
-| step | gas | ETC at 3.95 gwei |
+| step | gas | ETC at 1 gwei |
 |---|---|---|
-| deploy verifier (3.3 KB runtime) | about 760,000 | about 0.003 |
-| deploy factory and wallet implementation | about 600,000 | about 0.0024 |
-| first send, wallet created in the same tx | 395,000 (measured on anvil) | about 0.0016 |
-| later sends | about 265,000 | about 0.0011 |
+| deploy verifier, pqETC and wallet factory | about 2,200,000 | about 0.0022 |
+| Alice deposits and pays Bob in one transaction | 333,000 | 0.00033 |
+| a relayed pqETC transfer | 289,000 | 0.00029 |
+| a relayed withdrawal | 298,000 | 0.0003 |
 
-A transfer breaks down like this.
-
-- 21,000 base
-- about 124,000 for the 7,740-byte signature in calldata
-- about 82,000 for verification
-- 22,100 for the first nonce write, 5,000 after
-- 11,600 for the value call, plus 25,000 if the recipient is a new account
-
-Everything fits well inside the 8,000,000 gas block limit.
+Most of a send is the 7,740-byte signature, about 124,000 gas of calldata, and its verification, about 86,000. Everything fits well inside the 8,000,000 gas block limit.
 
 ## Open Questions
 
-- Who funds the mainnet deployer, and from which key. We ask istora before M5.
+- Who funds the mainnet deployer, and from which key.
 - How users back up keys. EthLib's secret key is a 32-byte seed. A BIP-39 phrase that encodes it is the likely choice. We rule out deriving the seed from an ECDSA wallet signature, because a quantum attacker who recovers the ECDSA key could recompute the seed.
 - Whether we verify contract source on Blockscout. That publishes the code, so we ask istora first. This repo stays private until istora says otherwise.
-- The leanSPHINCS parameters aren't final. The leanSphincs competition hasn't run yet. We think new verifiers and wallets per parameter set are enough, and we don't plan upgradeable wallets.
+- leanSPHINCS isn't final. A new version means a new verifier and a new pqETC, and we don't plan upgradeable contracts.
 - Whether "first" holds. We haven't found an earlier hash-based signature transaction on ETC, but we haven't searched the chain.
-- Audit. The verifier is unaudited research code and so is ours. pq.classix.dev should say so and cap what it suggests people move.
+- Audit. None of this is audited. The site says so and suggests tiny amounts only.

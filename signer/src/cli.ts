@@ -2,11 +2,12 @@
 /// <reference types="node" />
 // SPDX-License-Identifier: MIT
 //
-// The CLI of script/vendor/leansphincs_layered_signer.py, same output formats (every hex argument
-// may carry a 0x prefix):
-//   cli.ts keygen <seed32>                  prints the 32-byte public key root ‖ P
+// leanSPHINCS from the command line. Every hex argument may carry a 0x prefix.
+//   cli.ts keygen <seed32>                  prints the 32-byte public key PK.seed ‖ PK.root
 //   cli.ts sign <seed32> <msg32>            prints 0x ‖ abi.encode(bytes32 pkSeed, bytes32 pkRoot, bytes sig)
 //   cli.ts verify <pk32> <msg32> <sig7740>  prints true / false
+//
+// Foundry calls it over FFI, offline, as `node signer/node_modules/tsx/dist/cli.mjs signer/src/cli.ts`.
 
 import { abiEncodeSignOutput, fromHex, keygen, signWithKey, toHex, verify } from "./index.js";
 

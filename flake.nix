@@ -14,7 +14,6 @@
             pkgs.foundry
             pkgs.solc
             pkgs.nodejs_22
-            (pkgs.python3.withPackages (ps: [ ps.pycryptodome ]))
           ];
         };
       });

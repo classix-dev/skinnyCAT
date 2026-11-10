@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 bad='MCOPY|TLOAD|TSTORE|BLOBHASH|BLOBBASEFEE|BASEFEE|AUTH|AUTHCALL|EXTCALL|EXTDELEGATECALL|EXTSTATICCALL|RETURNDATALOAD|DATALOAD|UNKNOWN'
 status=0
-for c in LeanSphincsLayeredAsm LeanSphincsWallet LeanSphincsWalletFactory LeanSphincsLedger; do
+for c in LeanSphincsVerifier LeanSphincsWallet LeanSphincsWalletFactory LeanSphincsLedger; do
   code=$(forge inspect "$c" deployedBytecode)
   hex=${code#0x}
   meta=$(( 16#${hex: -4} ))          # CBOR length, in bytes

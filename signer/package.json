@@ -2,7 +2,7 @@
   "name": "@classix/leansphincs-signer",
   "version": "0.1.0",
   "private": true,
-  "description": "leanSPHINCS (layered 10+8+8, FORS 24x10, Keccak-256) signer, a TypeScript port of script/vendor/leansphincs_layered_signer.py",
+  "description": "leanSPHINCS (FIPS 205 layout, Keccak-256, 2^30 signatures) signer, following EthLib/Cryptography/Sphincs at ethereum/EthLib dce7a2de2",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

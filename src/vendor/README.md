@@ -1,1 +1,0 @@
-Vendored unchanged from https://github.com/nconsigny/SPHINCS- at 4c76aaf113d326df9adede63d015f3b394ab84f4 (MIT, see LICENSE-SPHINCS-minus). Test and signer copies in test/vendor and script/vendor change only import and script paths.
