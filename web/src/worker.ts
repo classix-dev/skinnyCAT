@@ -1,28 +1,33 @@
 /// <reference lib="webworker" />
 // leanSPHINCS in a Web Worker, so key generation and signing don't freeze the page.
-// Keeps the Signer for the current seed, which caches the top tree between calls.
+// Keeps a Signer per seed (Alice's and Bob's), each caching its top tree between calls.
 
-import { Signer, fromHex, toHex, verify } from "../../signer/src/index.ts";
+import { Signer, fromHex, toHex, verify } from "pq-signer";
 import type { WorkerRequest, WorkerResponse } from "./signer-client";
 
-let cached: { seedHex: string; signer: Signer } | null = null;
+const cache = new Map<string, Signer>();
+const KEEP = 2;
 
 function post(msg: WorkerResponse) {
   (self as unknown as DedicatedWorkerGlobalScope).postMessage(msg);
 }
 
 function signerFor(seedHex: string, id: number, phase: "keygen" | "sign"): Signer {
-  if (cached?.seedHex === seedHex) return cached.signer;
+  const hit = cache.get(seedHex);
+  if (hit) {
+    cache.delete(seedHex);
+    cache.set(seedHex, hit); // most recent last
+    return hit;
+  }
   const signer = Signer.fromSeed(fromHex(seedHex), (done, total) => post({ id, kind: "progress", phase, done, total }));
-  cached = { seedHex, signer };
+  cache.set(seedHex, signer);
+  while (cache.size > KEEP) cache.delete(cache.keys().next().value!);
   return signer;
 }
 
-function keyWords(s: Signer) {
-  const pad = new Uint8Array(16);
-  const word = (b: Uint8Array) => toHex(new Uint8Array([...b, ...pad]));
-  return { publicKey: toHex(s.publicKey()), pkSeed: word(s.pp), pkRoot: word(s.root) };
-}
+const pad = new Uint8Array(16);
+const word = (b: Uint8Array) => toHex(new Uint8Array([...b, ...pad]));
+const keyWords = (s: Signer) => ({ publicKey: toHex(s.publicKey()), pkSeed: word(s.pp), pkRoot: word(s.root) });
 
 self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
   const req = ev.data;
@@ -33,12 +38,10 @@ self.onmessage = (ev: MessageEvent<WorkerRequest>) => {
         break;
       }
       case "sign": {
-        const fresh = cached?.seedHex !== req.seed;
+        const fresh = !cache.has(req.seed);
         const s = signerFor(req.seed, req.id, "keygen");
         const t0 = performance.now();
-        const sig = s.sign(fromHex(req.message), (done, total) =>
-          post({ id: req.id, kind: "progress", phase: "sign", done, total }),
-        );
+        const sig = s.sign(fromHex(req.message), (done, total) => post({ id: req.id, kind: "progress", phase: "sign", done, total }));
         post({ id: req.id, kind: "result", value: { signature: toHex(sig), ms: performance.now() - t0, fresh } });
         break;
       }

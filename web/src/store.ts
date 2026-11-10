@@ -1,28 +1,23 @@
 // App state and actions, kept outside React. Components read a snapshot through useApp().
-// The flows here are the ones the page has always run, only the rendering moved to React.
+// Nothing here touches the browser until start() runs, after hydration, so the pre-rendered HTML
+// and the first client render come from the same initial state.
 
 import { useSyncExternalStore } from "react";
 import { isAddress, type Address, type Hex, type PublicClient } from "viem";
-import {
-  addressUrl,
-  buildCall,
-  chainOf,
-  messageHash,
-  predictWalletAddress,
-  publicClientOf,
-  txUrl,
-  verifyOnChain,
-  walletAddress,
-  walletState,
-  type WalletState,
-} from "./chain";
-import { DEADLINE_SECONDS, GAS_FALLBACK, enabledNetworks, type NetworkConfig } from "./config";
-import { walletAbi } from "./generated/contracts";
-import { forgetSeed as dropSeed, loadSeed, phraseToSeed, randomSeed, saveSeed } from "./key";
-import { errMsg, fmt, parseAmount, short } from "./lib/format";
-import { selfTests, type Check } from "./selftest";
+import { addressUrl, DEADLINE_SECONDS, DEFAULTS, GAS_FALLBACK, NETWORK, network, txUrl, type NetworkConfig } from "./config";
+import { discoverProviders, type Discovered, type ProviderInfo } from "./discover";
+import { LEDGER_SYMBOL, ledgerAbi } from "./generated/contracts";
+import { forgetSeed as dropSeed, loadSeed, NAMES, phraseToSeed, randomSeed, saveSeed, WHO, type Who } from "./key";
+import { accountOf, callData, digest, readEvents, type Kind } from "./ledger";
+import { errMsg, fmt, parseAmount, revertName, short } from "./lib/format";
+import type { Check } from "./selftest";
 import { keygen, sign, verifyLocal, type PublicKeyInfo } from "./signer-client";
-import { connect, discoverProviders, ensureChain, type Connection, type Discovered, type ProviderInfo } from "./web3";
+import type { Connection } from "./web3";
+
+// The RPC client, the browser wallet client and the self-tests load after hydration, so the chunk
+// that hydrates the page stays small.
+const chainMod = () => import("./chain");
+const web3Mod = () => import("./web3");
 
 export const STEPS = [
   ["message", "Message"],
@@ -36,6 +31,7 @@ export const STEPS = [
 ] as const;
 export type StepId = (typeof STEPS)[number][0];
 export type StepState = "idle" | "run" | "ok" | "fail";
+const SIGN_ONLY_STEPS: StepId[] = ["message", "signature", "local", "onchain"];
 
 export interface Step {
   id: StepId;
@@ -50,87 +46,110 @@ export interface Step {
   progress?: number;
 }
 
-export interface Status {
-  tone: "info" | "ok" | "error";
-  text: string;
-  href?: string;
-  linkLabel?: string;
+export interface Run {
+  kind: Kind;
+  signOnly: boolean;
+  steps: Step[];
+  /** Set once the receipt is in. */
+  receipt?: { memo: string | null; href: string; fee: bigint | null };
+  /** Set after a Sign Only run. */
+  signed?: { digest: Hex; signature: Hex };
 }
 
 export type KeyView = "none" | "import" | "busy" | "have";
 
-export interface State {
-  networks: NetworkConfig[];
-  net: NetworkConfig;
-  selftest: { state: "run" | "ok" | "fail"; checks: Check[] };
-
-  keyView: KeyView;
-  keyProgress: number;
+export interface Slot {
+  view: KeyView;
+  progress: number;
   seed: Hex | null;
   key: PublicKeyInfo | null;
-  keyError: string | null;
+  account: Address | null;
+  balance: bigint | null;
+  nonce: bigint | null;
+  error: string | null;
   /** The key was made just now, so the backup phrase starts open. */
-  keyFresh: boolean;
+  fresh: boolean;
   importArmed: boolean;
+}
 
-  walletAddr: Address | null;
-  wallet: WalletState | null;
-  walletError: string | null;
+export interface AliceForm {
+  deposit: string;
+  amount: string;
+  memo: string;
+  error: string | null;
+}
 
+export interface BobForm {
+  kind: Kind;
+  /** Ledger account for a transfer. Follows Alice's account until edited. */
+  to: string;
+  /** ETC address for a withdrawal. */
+  withdrawTo: string;
+  amount: string;
+  fee: string;
+  memo: string;
+  error: string | null;
+}
+
+export interface State {
+  /** False in the pre-rendered HTML and until start() runs. */
+  live: boolean;
+  net: NetworkConfig;
+  selftest: { state: "run" | "ok" | "fail"; checks: Check[] };
+  keys: Record<Who, Slot>;
   providers: Discovered[];
   conn: { info: ProviderInfo; account: Address } | null;
   connError: string | null;
+  connStatus: string | null;
   gasBalance: bigint | null;
-  funding: boolean;
-  fundStatus: Status | null;
-  fundAmount: string;
+  gasPrice: bigint | null;
+  alice: AliceForm;
+  bob: BobForm;
+  busy: Who | null;
+  runs: Record<Who, Run | null>;
+}
 
-  sendTo: string;
-  sendAmount: string;
-  sendError: string | null;
-  sending: boolean;
-  steps: Step[] | null;
+const emptySlot = (): Slot => ({
+  view: "none",
+  progress: 0,
+  seed: null,
+  key: null,
+  account: null,
+  balance: null,
+  nonce: null,
+  error: null,
+  fresh: false,
+  importArmed: false,
+});
+
+export function initialState(): State {
+  return {
+    live: false,
+    net: NETWORK,
+    selftest: { state: "run", checks: [] },
+    keys: { alice: emptySlot(), bob: emptySlot() },
+    providers: [],
+    conn: null,
+    connError: null,
+    connStatus: null,
+    gasBalance: null,
+    gasPrice: null,
+    alice: { deposit: DEFAULTS.deposit, amount: DEFAULTS.send, memo: DEFAULTS.memo, error: null },
+    bob: { kind: "transfer", to: "", withdrawTo: "", amount: DEFAULTS.bobAmount, fee: DEFAULTS.bobFee, memo: "", error: null },
+    busy: null,
+    runs: { alice: null, bob: null },
+  };
 }
 
 // ---------------------------------------------------------------------------
 // Store
 // ---------------------------------------------------------------------------
 
-const networks = enabledNetworks();
-if (!networks.length) throw new Error("no network enabled in config");
-const NET_KEY = "pq-classix.network";
-const initialNet = networks.find((n) => n.key === localStorage.getItem(NET_KEY)) ?? networks[0];
-
-let state: State = {
-  networks,
-  net: initialNet,
-  selftest: { state: "run", checks: [] },
-  keyView: "none",
-  keyProgress: 0,
-  seed: null,
-  key: null,
-  keyError: null,
-  keyFresh: false,
-  importArmed: false,
-  walletAddr: null,
-  wallet: null,
-  walletError: null,
-  providers: [],
-  conn: null,
-  connError: null,
-  gasBalance: null,
-  funding: false,
-  fundStatus: null,
-  fundAmount: initialNet.defaultAmount,
-  sendTo: "",
-  sendAmount: initialNet.defaultAmount,
-  sendError: null,
-  sending: false,
-  steps: null,
-};
-
+const SERVER_STATE = initialState();
+let state: State = SERVER_STATE;
 const listeners = new Set<() => void>();
 const get = () => state;
+const getServer = () => SERVER_STATE;
 function set(patch: Partial<State> | ((s: State) => Partial<State>)) {
   state = { ...state, ...(typeof patch === "function" ? patch(state) : patch) };
   for (const l of listeners) l();
@@ -140,143 +159,151 @@ function subscribe(l: () => void) {
   return () => listeners.delete(l);
 }
 
-export const useApp = () => useSyncExternalStore(subscribe, get, get);
+export const useApp = () => useSyncExternalStore(subscribe, get, getServer);
+export const getState = get;
 
-let pub: PublicClient = publicClientOf(state.net);
-/** The live connection, with its wallet client. State only carries what the UI shows. */
+function setSlot(who: Who, patch: Partial<Slot> | ((s: Slot) => Partial<Slot>)) {
+  set((s) => {
+    const cur = s.keys[who];
+    return { keys: { ...s.keys, [who]: { ...cur, ...(typeof patch === "function" ? patch(cur) : patch) } } };
+  });
+}
+
+let pub: PublicClient | null = null;
+async function client(): Promise<PublicClient> {
+  if (!pub) {
+    const { publicClientOf } = await chainMod();
+    pub ??= publicClientOf(state.net);
+  }
+  return pub;
+}
+/** The live connection, with its client. State only carries what the UI shows. */
 let conn: Connection | null = null;
 
-// ---------------------------------------------------------------------------
-// Network and self-tests
-// ---------------------------------------------------------------------------
-
-export function setNetwork(key: string) {
-  const n = state.networks.find((x) => x.key === key);
-  if (!n || n === state.net) return;
-  localStorage.setItem(NET_KEY, n.key);
-  pub = publicClientOf(n);
-  set((s) => ({
-    net: n,
-    wallet: null,
-    walletAddr: null,
-    steps: null,
-    fundStatus: null,
-    fundAmount: s.fundAmount || n.defaultAmount,
-    sendAmount: s.sendAmount || n.defaultAmount,
-  }));
-  void runSelfTests();
-  if (state.key) void loadWallet();
-  void refreshGasBalance();
+/** Test hook: replaces the store's state (unit tests only). */
+export function __setState(s: Partial<State>) {
+  set(s);
 }
+export function __reset() {
+  state = SERVER_STATE;
+  pub = null;
+  conn = null;
+  started = false;
+  for (const l of listeners) l();
+}
+
+// ---------------------------------------------------------------------------
+// Self-tests
+// ---------------------------------------------------------------------------
 
 async function runSelfTests() {
   set({ selftest: { state: "run", checks: [] } });
-  const target = state.net;
-  const checks = await selfTests(pub, target);
-  if (target !== state.net) return;
+  const { selfTests } = await import("./selftest");
+  const checks = await selfTests(await client(), state.net);
   set({ selftest: { state: checks.every((c) => c.ok) ? "ok" : "fail", checks } });
 }
 
 // ---------------------------------------------------------------------------
-// Key
+// Keys
 // ---------------------------------------------------------------------------
 
-async function loadKey(s: Hex, fresh = false) {
-  set({ seed: s, keyFresh: fresh, key: null, wallet: null, walletAddr: null, keyView: "busy", keyProgress: 0, keyError: null });
+async function loadKey(who: Who, seed: Hex, fresh = false) {
+  setSlot(who, { ...emptySlot(), seed, fresh, view: "busy" });
   let k: PublicKeyInfo;
   try {
-    k = await keygen(s, (_p, done, total) => {
-      if (state.seed === s) set({ keyProgress: done / total });
+    k = await keygen(seed, (_p, done, total) => {
+      if (state.keys[who].seed === seed) setSlot(who, { progress: done / total });
     });
   } catch (e) {
-    if (state.seed === s) set({ keyView: "none", keyError: errMsg(e) });
+    if (state.keys[who].seed === seed) setSlot(who, { view: "none", seed: null, error: errMsg(e) });
     return;
   }
-  if (state.seed !== s) return;
-  set({ key: k, keyView: "have" });
-  await loadWallet();
+  if (state.keys[who].seed !== seed) return;
+  const account = accountOf(k.pkSeed, k.pkRoot);
+  setSlot(who, { key: k, account, view: "have" });
+  if (who === "alice") followAlice(account);
+  await refreshAccount(who);
 }
 
-export function createKey() {
-  const s = randomSeed();
-  saveSeed(s);
-  void loadKey(s, true);
+/** Bob's transfer goes to Alice unless someone typed another account. */
+function followAlice(account: Address | null) {
+  set((s) => {
+    const prev = s.keys.alice.account;
+    const following = !s.bob.to || (prev && s.bob.to === prev) || s.bob.to === account;
+    return following ? { bob: { ...s.bob, to: account ?? "" } } : {};
+  });
 }
 
-export const openImport = () => set({ keyView: "import", keyError: null, importArmed: false });
-export const cancelImport = () => set((s) => ({ keyView: s.key ? "have" : "none", keyError: null, importArmed: false }));
-export const disarmImport = () => state.importArmed && set({ importArmed: false });
+export function createKey(who: Who) {
+  const seed = randomSeed();
+  saveSeed(who, seed);
+  void loadKey(who, seed, true);
+}
+
+export const openImport = (who: Who) => setSlot(who, { view: "import", error: null, importArmed: false });
+export const cancelImport = (who: Who) =>
+  setSlot(who, (s) => ({ view: s.key ? "have" : "none", error: null, importArmed: false }));
+export const disarmImport = (who: Who) => state.keys[who].importArmed && setSlot(who, { importArmed: false });
 
 /** Imports a phrase. Replacing a different stored key takes a second call. */
-export function importPhrase(phrase: string) {
-  let s: Hex;
+export function importPhrase(who: Who, phrase: string) {
+  let seed: Hex;
   try {
-    s = phraseToSeed(phrase);
+    seed = phraseToSeed(phrase);
   } catch (e) {
-    set({ keyError: (e as Error).message });
+    setSlot(who, { error: (e as Error).message });
     return;
   }
-  if (state.seed && s !== state.seed && !state.importArmed) {
-    set({
+  const slot = state.keys[who];
+  if (slot.seed && seed !== slot.seed && !slot.importArmed) {
+    setSlot(who, {
       importArmed: true,
-      keyError: "This replaces the key stored in this browser. Back up its phrase first, then confirm.",
+      error: `This replaces ${NAMES[who]}'s key in this browser. Back up its phrase first, then confirm.`,
     });
     return;
   }
-  set({ importArmed: false, keyError: null });
-  saveSeed(s);
-  void loadKey(s);
+  const other = WHO.find((w) => w !== who)!;
+  if (state.keys[other].seed === seed) {
+    setSlot(who, { error: `That's ${NAMES[other]}'s key. Give each person their own.` });
+    return;
+  }
+  saveSeed(who, seed);
+  void loadKey(who, seed);
 }
 
-export function forgetKey() {
-  dropSeed();
-  set({ seed: null, key: null, wallet: null, walletAddr: null, keyView: "none", steps: null, keyError: null });
+export function forgetKey(who: Who) {
+  dropSeed(who);
+  setSlot(who, emptySlot());
+  set((s) => ({ runs: { ...s.runs, [who]: null } }));
+  if (who === "alice") followAlice(null);
 }
 
-// ---------------------------------------------------------------------------
-// LeanSPHINCS wallet
-// ---------------------------------------------------------------------------
-
-async function loadWallet() {
-  const k = state.key;
-  if (!k) return;
-  set({ walletError: null });
+async function refreshAccount(who: Who) {
+  const a = state.keys[who].account;
+  if (!a) return;
   try {
-    const predicted = predictWalletAddress(state.net, k.pkSeed, k.pkRoot);
-    set({ walletAddr: predicted });
-    const onChain = await walletAddress(pub, state.net, k.pkSeed, k.pkRoot);
-    if (onChain.toLowerCase() !== predicted.toLowerCase())
-      throw new Error(`The factory says ${onChain}, but this page computed ${predicted}.`);
-    await refreshWallet();
+    const pc = await client();
+    const [balance, nonce] = await Promise.all([
+      pc.readContract({ address: state.net.ledger, abi: ledgerAbi, functionName: "balanceOf", args: [a] }),
+      pc.readContract({ address: state.net.ledger, abi: ledgerAbi, functionName: "nonces", args: [a] }),
+    ]);
+    if (state.keys[who].account === a) setSlot(who, { balance, nonce, error: null });
   } catch (e) {
-    if (state.key !== k) return;
-    set({ walletError: errMsg(e) });
+    if (state.keys[who].account === a) setSlot(who, { error: `Couldn't read the balance. ${errMsg(e)}` });
   }
 }
 
-async function refreshWallet() {
-  const a = state.walletAddr;
-  if (!a) return;
-  const w = await walletState(pub, a);
-  if (a !== state.walletAddr) return;
-  set({ wallet: w, walletError: null });
-}
-
-export function reloadWallet() {
-  refreshWallet().catch((e) => set({ walletError: errMsg(e) }));
-}
-
-export const walletExplorer = (s: State) => (s.walletAddr ? addressUrl(s.net, s.walletAddr) : undefined);
+export const refreshAll = () => Promise.all([refreshAccount("alice"), refreshAccount("bob"), refreshGasBalance()]);
 
 // ---------------------------------------------------------------------------
-// Gas wallet
+// Browser wallet
 // ---------------------------------------------------------------------------
 
 export async function connectProvider(d: Discovered) {
-  set({ connError: null });
+  set({ connError: null, connStatus: null });
   let c: Connection;
   try {
-    c = await connect(d);
+    c = await (await web3Mod()).connect(d);
   } catch (e) {
     set({ connError: errMsg(e) });
     return;
@@ -289,23 +316,20 @@ export async function connectProvider(d: Discovered) {
       set({ conn: null, gasBalance: null });
       return;
     }
-    const prev = c.account;
     c.account = accs[0];
-    set((s) => ({ conn: { info: c.info, account: accs[0] }, sendTo: s.sendTo === prev ? accs[0] : s.sendTo }));
+    set({ conn: { info: c.info, account: accs[0] } });
     void refreshGasBalance();
   });
-  set((s) => ({ conn: { info: c.info, account: c.account }, sendTo: s.sendTo || c.account }));
+  set({ conn: { info: c.info, account: c.account } });
   void refreshGasBalance();
   try {
-    await ensureChain(c, state.net);
+    await (await web3Mod()).ensureChain(c, state.net);
   } catch (e) {
-    set({
-      fundStatus: { tone: "error", text: `Switch the wallet to ${state.net.name} (chain ${state.net.chainId}). ${errMsg(e)}` },
-    });
+    set({ connStatus: `Switch the browser wallet to ${state.net.name} (chain ${state.net.chainId}). ${errMsg(e)}` });
   }
 }
 
-/** Connects straight away when there is one wallet. Returns false when the user has to pick. */
+/** Connects straight away when there is one browser wallet. Returns false when the user has to pick. */
 export function quickConnect(): boolean {
   if (state.providers.length !== 1) return false;
   void connectProvider(state.providers[0]);
@@ -313,213 +337,259 @@ export function quickConnect(): boolean {
 }
 
 async function refreshGasBalance() {
-  if (!conn) return;
-  let b: bigint | null;
-  try {
-    b = await pub.getBalance({ address: conn.account });
-  } catch {
-    b = null;
-  }
-  set({ gasBalance: b });
+  const a = conn?.account;
+  const pc = await client();
+  const [b, p] = await Promise.all([
+    a ? pc.getBalance({ address: a }).catch(() => null) : Promise.resolve(null),
+    pc.getGasPrice().catch(() => state.gasPrice),
+  ]);
+  set({ gasBalance: b, gasPrice: p });
 }
 
-async function gasFor(req: { account: Address; to: Address; data?: Hex; value?: bigint }, fallbackGas: bigint) {
-  try {
-    const est = await pub.estimateGas(req);
-    return (est * 125n) / 100n;
-  } catch {
-    return fallbackGas;
-  }
+// ---------------------------------------------------------------------------
+// Forms
+// ---------------------------------------------------------------------------
+
+export const setAlice = (p: Partial<AliceForm>) => set((s) => ({ alice: { ...s.alice, ...p, error: null } }));
+export const setBob = (p: Partial<BobForm>) => set((s) => ({ bob: { ...s.bob, ...p, error: null } }));
+
+// ---------------------------------------------------------------------------
+// Signing and sending
+// ---------------------------------------------------------------------------
+
+function step(who: Who, id: StepId, st: StepState, detail: Omit<Step, "id" | "label" | "state"> = {}) {
+  set((s) => {
+    const r = s.runs[who];
+    if (!r) return {};
+    return { runs: { ...s.runs, [who]: { ...r, steps: r.steps.map((x) => (x.id === id ? { id, label: x.label, state: st, ...detail } : x)) } } };
+  });
 }
 
-export const setFundAmount = (v: string) => set({ fundAmount: v });
+function patchRun(who: Who, p: Partial<Run>) {
+  set((s) => (s.runs[who] ? { runs: { ...s.runs, [who]: { ...s.runs[who]!, ...p } } } : {}));
+}
 
-export async function fund() {
+interface Plan {
+  kind: Kind;
+  to: Address;
+  amount: bigint;
+  fee: bigint;
+  /** ETC sent along, deposited to the signer first. */
+  value: bigint;
+  memo: string;
+}
+
+/** Reads and checks a form. Throws with a message for the form. */
+export function planFor(who: Who, s: State = state): Plan {
+  if (who === "alice") {
+    const f = s.alice;
+    const bob = s.keys.bob.account;
+    if (!bob) throw new Error("Create or import Bob's key first, so Alice has someone to pay.");
+    return {
+      kind: "transfer",
+      to: bob,
+      value: parseAmount(f.deposit, { allowZero: true, what: "The deposit" }),
+      amount: parseAmount(f.amount, { what: "The amount for Bob" }),
+      fee: 0n,
+      memo: f.memo,
+    };
+  }
+  const f = s.bob;
+  const to = (f.kind === "transfer" ? f.to : f.withdrawTo).trim();
+  if (!isAddress(to)) throw new Error(f.kind === "transfer" ? `The ${LEDGER_SYMBOL} account isn't a valid address.` : "The address to withdraw to isn't valid.");
+  return {
+    kind: f.kind,
+    to: to as Address,
+    value: 0n,
+    amount: parseAmount(f.amount, { what: "The amount" }),
+    fee: parseAmount(f.fee, { allowZero: true, what: "The fee" }),
+    memo: f.memo,
+  };
+}
+
+const formError = (who: Who, error: string) =>
+  set((s) => (who === "alice" ? { alice: { ...s.alice, error } } : { bob: { ...s.bob, error } }));
+
+/**
+ * Signs the current form with the person's key, checks the signature locally and with the deployed
+ * verifier, and unless `signOnly`, simulates and submits it through the browser wallet.
+ */
+export async function act(who: Who, signOnly: boolean) {
   const n = state.net;
-  const to = state.walletAddr;
-  if (!conn || !to || state.funding) return;
-  let value: bigint;
+  const slot = state.keys[who];
+  if (state.busy) return;
+  if (!slot.key || !slot.seed || !slot.account) return formError(who, `Create or import ${NAMES[who]}'s key first.`);
+  if (!signOnly && !conn) return formError(who, "Connect a browser wallet to submit. Or use Sign Only.");
+  let plan: Plan;
   try {
-    value = parseAmount(n, state.fundAmount);
+    plan = planFor(who);
   } catch (e) {
-    set({ fundStatus: { tone: "error", text: (e as Error).message } });
-    return;
+    return formError(who, (e as Error).message);
   }
+  const { key: k, seed, account: from } = slot;
   const c = conn;
-  set({ funding: true, fundStatus: { tone: "info", text: `Switching the wallet to ${n.name}` } });
-  try {
-    await ensureChain(c, n);
-    const gas = await gasFor({ account: c.account, to, value }, GAS_FALLBACK.fund);
-    const gasPrice = await pub.getGasPrice();
-    set({ fundStatus: { tone: "info", text: "Confirm the transfer in your wallet" } });
-    const hash = await c.client.sendTransaction({
-      account: c.account,
-      chain: chainOf(n),
-      to,
-      value,
-      gas,
-      gasPrice,
-      type: "legacy",
-    });
-    set({ fundStatus: { tone: "info", text: `Sent ${fmt(n, value)}, waiting for a block`, href: txUrl(n, hash), linkLabel: short(hash) } });
-    const r = await pub.waitForTransactionReceipt({ hash, pollingInterval: 1500 });
-    set({
-      fundStatus:
-        r.status === "success"
-          ? { tone: "ok", text: `Funded with ${fmt(n, value)} in block ${r.blockNumber}`, href: txUrl(n, hash), linkLabel: "View" }
-          : { tone: "error", text: "The transfer reverted", href: txUrl(n, hash), linkLabel: "View" },
-    });
-    await Promise.all([refreshWallet(), refreshGasBalance()]);
-  } catch (e) {
-    set({ fundStatus: { tone: "error", text: errMsg(e) } });
-  } finally {
-    set({ funding: false });
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Send
-// ---------------------------------------------------------------------------
-
-export const setSendTo = (v: string) => set({ sendTo: v, sendError: null });
-export const setSendAmount = (v: string) => set({ sendAmount: v, sendError: null });
-
-function step(id: StepId, st: StepState, detail: Omit<Step, "id" | "label" | "state"> = {}) {
-  set((s) => ({ steps: s.steps?.map((x) => (x.id === id ? { id, label: x.label, state: st, ...detail } : x)) ?? null }));
-}
-
-export async function send() {
-  const { key: k, seed: s, walletAddr, net: n } = state;
-  if (!k || !s || !conn || !walletAddr || state.sending) return;
-  const to = state.sendTo.trim();
-  let value: bigint;
-  try {
-    if (!isAddress(to)) throw new Error("The recipient isn't a valid address.");
-    value = parseAmount(n, state.sendAmount);
-  } catch (e) {
-    set({ sendError: (e as Error).message });
-    return;
-  }
-  const c = conn;
-  set({ sending: true, sendError: null, steps: STEPS.map(([id, label]) => ({ id, label, state: "idle" })) });
+  const ids = signOnly ? SIGN_ONLY_STEPS : STEPS.map(([id]) => id);
+  const steps = STEPS.filter(([id]) => ids.includes(id)).map(([id, label]): Step => ({ id, label, state: "idle" }));
+  set((s) => ({ busy: who, runs: { ...s.runs, [who]: { kind: plan.kind, signOnly, steps } } }));
   let current: StepId = "message";
   try {
+    const pc = await client();
+    const { chainOf, verifyOnChain } = await chainMod();
+    const { ensureChain } = await web3Mod();
     // 1. Message
-    step("message", "run", { text: "reading the wallet" });
-    const w = await walletState(pub, walletAddr);
-    set({ wallet: w });
-    if (w.balance < value) throw new Error(`The wallet holds ${fmt(n, w.balance)}, less than ${fmt(n, value)}.`);
-    const data: Hex = "0x";
-    const deadline = BigInt(Math.floor(Date.now() / 1000) + DEADLINE_SECONDS);
-    const msg = messageHash({ chainId: n.chainId, wallet: w.address, nonce: w.nonce, to, value, data, deadline });
-    if (w.deployed) {
-      const onChain = await pub.readContract({
-        address: w.address,
-        abi: walletAbi,
-        functionName: "messageHash",
-        args: [to, value, data, w.nonce, deadline],
-      });
-      if (onChain !== msg) throw new Error(`The wallet computes ${onChain}, this page ${msg}.`);
+    step(who, "message", "run", { text: "reading the nonce" });
+    const [balance, nonce] = await Promise.all([
+      pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "balanceOf", args: [from] }),
+      pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "nonces", args: [from] }),
+    ]);
+    setSlot(who, { balance, nonce });
+    if (!signOnly) {
+      const debit = plan.amount + plan.fee;
+      if (balance + plan.value < debit) {
+        const has = plan.value ? `${fmt(balance, LEDGER_SYMBOL)} and deposits ${fmt(plan.value, "ETC")}` : fmt(balance, LEDGER_SYMBOL);
+        throw new Error(`${NAMES[who]} holds ${has}, less than the ${fmt(debit, LEDGER_SYMBOL)} this spends.`);
+      }
+      if (plan.value && state.gasBalance !== null && state.gasBalance < plan.value)
+        throw new Error(`The browser wallet holds ${fmt(state.gasBalance, "ETC")}, less than the ${fmt(plan.value, "ETC")} deposit.`);
     }
-    step("message", "ok", { value: msg, text: `nonce ${w.nonce}${w.deployed ? ", matches messageHash()" : ""}` });
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + DEADLINE_SECONDS);
+    const p = { chainId: n.chainId, ledger: n.ledger, from, nonce, to: plan.to, amount: plan.amount, fee: plan.fee, deadline, memo: plan.memo };
+    const msg = digest(plan.kind, p);
+    const fn = plan.kind === "transfer" ? "transferDigest" : "withdrawDigest";
+    const onChain = await pc.readContract({
+      address: n.ledger,
+      abi: ledgerAbi,
+      functionName: fn,
+      args: [from, nonce, plan.to, plan.amount, plan.fee, deadline, plan.memo],
+    });
+    if (onChain !== msg) throw new Error(`${LEDGER_SYMBOL} computes ${onChain}, this page ${msg}.`);
+    step(who, "message", "ok", { value: msg, text: `nonce ${nonce}, matches ${fn}()` });
 
     // 2. Signature
     current = "signature";
-    step("signature", "run", { text: "signing in a Web Worker", progress: 0 });
+    step(who, "signature", "run", { text: "signing in a Web Worker", progress: 0 });
     const t0 = performance.now();
-    const { signature } = await sign(s, msg, (phase, done, total) =>
-      step("signature", "run", {
-        text: phase === "keygen" ? "rebuilding the top tree" : "signing in a Web Worker",
-        progress: done / total,
-      }),
+    const { signature } = await sign(seed, msg, (phase, done, total) =>
+      step(who, "signature", "run", { text: phase === "keygen" ? "rebuilding the top tree" : "signing in a Web Worker", progress: done / total }),
     );
     const bytes = (signature.length - 2) / 2;
     if (bytes !== 7740) throw new Error(`The signature is ${bytes} bytes, expected 7,740.`);
-    step("signature", "ok", {
-      text: `${bytes.toLocaleString("en-US")} bytes in ${((performance.now() - t0) / 1000).toFixed(1)} s`,
-    });
+    step(who, "signature", "ok", { text: `${bytes.toLocaleString("en-US")} bytes in ${((performance.now() - t0) / 1000).toFixed(1)} s` });
 
     // 3. Local verify
     current = "local";
-    step("local", "run", { text: "JavaScript verifier" });
-    const okLocal = await verifyLocal(k.publicKey, msg, signature);
-    if (okLocal !== true) throw new Error("The JavaScript verifier rejected the signature.");
-    step("local", "ok", { text: "valid in JavaScript" });
+    step(who, "local", "run", { text: "JavaScript verifier" });
+    if ((await verifyLocal(k.publicKey, msg, signature)) !== true) throw new Error("The JavaScript verifier rejected the signature.");
+    step(who, "local", "ok", { text: "valid in JavaScript" });
 
     // 4. On-chain verify
     current = "onchain";
-    step("onchain", "run", { text: "eth_call to the verifier" });
-    const okChain = await verifyOnChain(pub, n, k.pkSeed, k.pkRoot, msg, signature);
-    if (!okChain) throw new Error(`The verifier at ${n.verifier} returned false.`);
-    step("onchain", "ok", { text: "returned true", value: n.verifier, href: addressUrl(n, n.verifier) });
+    step(who, "onchain", "run", { text: "eth_call to the verifier" });
+    if (!(await verifyOnChain(pc, n, k.pkSeed, k.pkRoot, msg, signature))) throw new Error(`The verifier at ${n.verifier} returned false.`);
+    step(who, "onchain", "ok", { text: "returned true", value: n.verifier, href: addressUrl(n, n.verifier) });
+    if (signOnly || !c) {
+      patchRun(who, { signed: { digest: msg, signature } });
+      return;
+    }
 
     // 5. Simulate
     current = "simulate";
-    step("simulate", "run", { text: "eth_call of the whole transaction" });
-    const call = buildCall({ n, wallet: w, pkSeed: k.pkSeed, pkRoot: k.pkRoot, to, value, data, deadline, sig: signature });
-    await pub.call({ account: c.account, to: call.to, data: call.data });
-    const gas = await gasFor(
-      { account: c.account, to: call.to, data: call.data },
-      call.method === "execute" ? GAS_FALLBACK.execute : GAS_FALLBACK.createAndExecute,
-    );
-    step("simulate", "ok", { text: `${call.method}, gas limit ${gas.toLocaleString("en-US")}` });
+    step(who, "simulate", "run", { text: "eth_call of the whole transaction" });
+    const data = callData(plan.kind, { pkSeed: k.pkSeed, pkRoot: k.pkRoot, to: plan.to, amount: plan.amount, fee: plan.fee, deadline, memo: plan.memo, sig: signature });
+    const tx = { account: c.account, to: n.ledger, data, value: plan.value };
+    await pc.call(tx);
+    let gas: bigint;
+    try {
+      gas = ((await pc.estimateGas(tx)) * 125n) / 100n;
+    } catch {
+      gas = GAS_FALLBACK;
+    }
+    const feeText = plan.fee ? `, fee ${fmt(plan.fee, "ETC")} to the relayer` : "";
+    step(who, "simulate", "ok", { text: `${plan.kind}, gas limit ${gas.toLocaleString("en-US")}${feeText}` });
 
     // 6. Send
     current = "sent";
-    step("sent", "run", { text: `switching the wallet to ${n.name}` });
+    step(who, "sent", "run", { text: `switching the browser wallet to ${n.name}` });
     await ensureChain(c, n);
-    const gasPrice = await pub.getGasPrice();
-    step("sent", "run", { text: "confirm in your wallet" });
+    const gasPrice = await pc.getGasPrice();
+    step(who, "sent", "run", { text: "confirm in your browser wallet" });
     const hash = await c.client.sendTransaction({
       account: c.account,
       chain: chainOf(n),
-      to: call.to,
-      data: call.data,
+      to: n.ledger,
+      data,
+      value: plan.value,
       gas,
       gasPrice,
       type: "legacy",
     });
-    step("sent", "ok", { value: hash, href: txUrl(n, hash) });
+    step(who, "sent", "ok", { value: hash, href: txUrl(n, hash) });
 
     // 7. Receipt
     current = "confirmed";
-    step("confirmed", "run", { text: "waiting for a block" });
-    const r = await pub.waitForTransactionReceipt({ hash, pollingInterval: 1500 });
-    step("explorer", "ok", { text: n.explorer.replace(/^https?:\/\//, ""), href: txUrl(n, hash) });
-    if (r.status !== "success") throw new Error(`The transaction reverted in block ${r.blockNumber}.`);
-    step("confirmed", "ok", {
-      text: `block ${r.blockNumber}, ${r.gasUsed.toLocaleString("en-US")} gas, ${fmt(n, value)} to ${short(to)}`,
-    });
+    step(who, "confirmed", "run", { text: "waiting for a block" });
+    const r = await pc.waitForTransactionReceipt({ hash, pollingInterval: 1500 });
+    step(who, "explorer", "ok", { text: n.explorer.replace(/^https?:\/\//, ""), href: txUrl(n, hash) });
+    if (r.status !== "success") {
+      // Replay it to say why. A changed field shows up as BadSignature.
+      let why = "";
+      try {
+        await pc.call({ ...tx, data: (await pc.getTransaction({ hash })).input, blockNumber: r.blockNumber - 1n });
+      } catch (e) {
+        const raw = (e as { walk?: (f: (x: unknown) => boolean) => unknown }).walk?.((x) => typeof (x as { data?: unknown }).data === "string") as
+          | { data?: Hex }
+          | undefined;
+        const name = revertName(raw?.data);
+        if (name) why = `, ${name}`;
+      }
+      throw new Error(`The transaction reverted in block ${r.blockNumber}${why}.`);
+    }
+    const ev = readEvents(r.logs, n.ledger);
+    const what =
+      plan.kind === "transfer"
+        ? `${fmt(plan.amount, LEDGER_SYMBOL)} to ${short(plan.to)}`
+        : `${fmt(plan.amount, "ETC")} out to ${short(plan.to)}`;
+    step(who, "confirmed", "ok", { text: `block ${r.blockNumber}, ${r.gasUsed.toLocaleString("en-US")} gas, ${what}` });
+    patchRun(who, { receipt: { memo: ev.memo, href: txUrl(n, hash), fee: ev.fee?.amount ?? null } });
   } catch (e) {
-    step(current, "fail", { text: errMsg(e) });
+    step(who, current, "fail", { text: errMsg(e) });
   } finally {
-    set({ sending: false });
-    void refreshWallet().catch(() => {});
-    void refreshGasBalance();
+    set({ busy: null });
+    void refreshAll();
   }
 }
 
 // ---------------------------------------------------------------------------
-// Start
+// Start, after hydration
 // ---------------------------------------------------------------------------
 
 let started = false;
 export function start() {
   if (started) return;
   started = true;
+  const net = network();
+  set({ live: true, net });
+
   const list = discoverProviders((l) => set({ providers: l }));
   set({ providers: list() });
-  // Some wallets inject late. Look again once the page has settled.
+  // Some browser wallets inject late. Look again once the page has settled.
   setTimeout(() => set({ providers: list() }), 600);
 
-  const stored = loadSeed();
-  if (stored) void loadKey(stored);
-
+  // Alice first, so the worker builds her tree while Bob's waits its turn.
+  for (const who of WHO) {
+    const seed = loadSeed(who);
+    if (seed) void loadKey(who, seed);
+  }
   void runSelfTests();
+  void refreshGasBalance();
 
   setInterval(() => {
-    if (document.visibilityState !== "visible" || state.sending) return;
-    void refreshWallet().catch(() => {});
-    void refreshGasBalance();
+    if (document.visibilityState !== "visible" || state.busy) return;
+    void refreshAll();
   }, 15_000);
 }
+
+export const accountUrl = (s: State, who: Who) => {
+  const a = s.keys[who].account;
+  return a ? addressUrl(s.net, a) : undefined;
+};

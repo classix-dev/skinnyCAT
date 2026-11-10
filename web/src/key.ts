@@ -1,11 +1,17 @@
-// The leanSPHINCS secret is EthLib's 32-byte seed S_0. We back it up as 24 BIP-39 English words
-// (the seed is the entropy, there is no PBKDF2 step) and keep it in localStorage.
+// A leanSPHINCS secret is EthLib's 32-byte SK.seed. We back it up as 24 BIP-39 English words
+// (the seed is the entropy, there is no PBKDF2 step) and keep it in localStorage, one per person.
 
 import { entropyToMnemonic, mnemonicToEntropy, validateMnemonic } from "@scure/bip39";
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import { bytesToHex, hexToBytes, type Hex } from "viem";
 
-const STORAGE_KEY = "pq-classix.leansphincs-seed.v1";
+export type Who = "alice" | "bob";
+export const WHO: Who[] = ["alice", "bob"];
+export const NAMES: Record<Who, string> = { alice: "Alice", bob: "Bob" };
+
+const storageKey = (who: Who) => `pq-classix.${who}.leansphincs-seed.v1`;
+/** The single key of the first version of the page becomes Alice's. */
+const LEGACY_KEY = "pq-classix.leansphincs-seed.v1";
 
 export function randomSeed(): Hex {
   const b = new Uint8Array(32);
@@ -26,10 +32,21 @@ export function phraseToSeed(phrase: string): Hex {
   return bytesToHex(mnemonicToEntropy(norm, wordlist));
 }
 
-export function loadSeed(): Hex | null {
-  const s = localStorage.getItem(STORAGE_KEY);
-  return s && /^0x[0-9a-f]{64}$/.test(s) ? (s as Hex) : null;
+const valid = (s: string | null): s is Hex => !!s && /^0x[0-9a-f]{64}$/.test(s);
+
+export function loadSeed(who: Who): Hex | null {
+  const s = localStorage.getItem(storageKey(who));
+  if (valid(s)) return s;
+  if (who === "alice") {
+    const old = localStorage.getItem(LEGACY_KEY);
+    if (valid(old)) {
+      localStorage.setItem(storageKey(who), old);
+      localStorage.removeItem(LEGACY_KEY);
+      return old;
+    }
+  }
+  return null;
 }
 
-export const saveSeed = (seed: Hex) => localStorage.setItem(STORAGE_KEY, seed);
-export const forgetSeed = () => localStorage.removeItem(STORAGE_KEY);
+export const saveSeed = (who: Who, seed: Hex) => localStorage.setItem(storageKey(who), seed);
+export const forgetSeed = (who: Who) => localStorage.removeItem(storageKey(who));

@@ -1,6 +1,8 @@
 node_modules/
 dist/
+.ssr/
 screenshots/
 test-results/
 e2e/.tmp/
 .wrangler/
+lighthouse/

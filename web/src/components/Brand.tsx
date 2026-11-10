@@ -1,6 +1,7 @@
 import { cx } from "./ui";
 
 export const APP_NAME = "Hypertree";
+export const TAGLINE = "Quantum-Secure Transactions on Ethereum Classic";
 
 /** A small hash tree. One leaf's path to the root is lit, the way a SPHINCS signature walks it. */
 export function LogoMark({ className }: { className?: string }) {

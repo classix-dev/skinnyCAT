@@ -1,11 +1,18 @@
 import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, hydrateRoot } from "react-dom/client";
 import { App } from "./App";
-import { start } from "./store";
 
-start();
-createRoot(document.getElementById("root")!).render(
+const el = document.getElementById("root")!;
+const app = (
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 );
+// The build pre-renders the page into #root. The dev server serves it empty.
+if (el.firstElementChild) {
+  hydrateRoot(el, app, {
+    onRecoverableError: (e, info) => console.error("hydration:", e, info?.componentStack ?? ""),
+  });
+} else {
+  createRoot(el).render(app);
+}

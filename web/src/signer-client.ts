@@ -1,4 +1,5 @@
-// The page's side of the signing worker.
+// The page's side of the signing worker. The worker starts on first use, so nothing here runs
+// during pre-rendering or before hydration.
 
 import type { Hex } from "viem";
 
@@ -13,44 +14,51 @@ export type WorkerResponse =
   | { id: number; kind: "error"; message: string };
 
 export interface PublicKeyInfo {
-  /** root ‖ P, 32 bytes */
+  /** The encoded public key, 32 bytes, as the signer lays it out. */
   publicKey: Hex;
-  /** P ‖ 0^16 */
+  /** PK.seed ‖ 0^16 */
   pkSeed: Hex;
-  /** root ‖ 0^16 */
+  /** PK.root ‖ 0^16 */
   pkRoot: Hex;
 }
 
 export type Progress = (phase: "keygen" | "sign", done: number, total: number) => void;
 
-const worker = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+let worker: Worker | null = null;
 let nextId = 1;
 const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void; onProgress?: Progress }>();
 
-worker.onmessage = (ev: MessageEvent<WorkerResponse>) => {
-  const m = ev.data;
-  const p = pending.get(m.id);
-  if (!p) return;
-  if (m.kind === "progress") p.onProgress?.(m.phase, m.done, m.total);
-  else {
-    pending.delete(m.id);
-    if (m.kind === "result") p.resolve(m.value);
-    else p.reject(new Error(m.message));
-  }
-};
-worker.onerror = (ev) => {
-  for (const p of pending.values()) p.reject(new Error(`signing worker failed: ${ev.message}`));
-  pending.clear();
-};
+function getWorker(): Worker {
+  if (worker) return worker;
+  const w = new Worker(new URL("./worker.ts", import.meta.url), { type: "module" });
+  w.onmessage = (ev: MessageEvent<WorkerResponse>) => {
+    const m = ev.data;
+    const p = pending.get(m.id);
+    if (!p) return;
+    if (m.kind === "progress") p.onProgress?.(m.phase, m.done, m.total);
+    else {
+      pending.delete(m.id);
+      if (m.kind === "result") p.resolve(m.value);
+      else p.reject(new Error(m.message));
+    }
+  };
+  w.onerror = (ev) => {
+    for (const p of pending.values()) p.reject(new Error(`signing worker failed: ${ev.message}`));
+    pending.clear();
+  };
+  worker = w;
+  return w;
+}
 
 // Distributive Omit, so each request variant keeps its own fields.
 type RequestBody = WorkerRequest extends infer R ? (R extends WorkerRequest ? Omit<R, "id"> : never) : never;
 
 function call<T>(req: RequestBody, onProgress?: Progress): Promise<T> {
   const id = nextId++;
+  const w = getWorker();
   return new Promise<T>((resolve, reject) => {
     pending.set(id, { resolve: resolve as (v: unknown) => void, reject, onProgress });
-    worker.postMessage({ ...req, id } as WorkerRequest);
+    w.postMessage({ ...req, id } as WorkerRequest);
   });
 }
 

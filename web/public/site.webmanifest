@@ -1,7 +1,7 @@
 {
   "name": "Hypertree",
   "short_name": "Hypertree",
-  "description": "A post-quantum wallet for Ethereum Classic, signed with leanSPHINCS in your browser.",
+  "description": "Quantum-secure transactions on Ethereum Classic, signed with leanSPHINCS in your browser. A proof of concept by Classix.",
   "start_url": "/",
   "display": "browser",
   "background_color": "#03050c",
