@@ -89,8 +89,12 @@ export function FrameTransactions() {
           <h3 className="text-sm font-semibold text-fg">Aggregation With EIP-8288</h3>
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
             In <A href={LINKS.eip8288}>EIP-8288</A>, block builders replace a block's leanSPHINCS signatures with one aggregate
-            proof, about 3,000 gas per signature instead of 7,740 bytes each. It gives leanSPHINCS the scheme byte{" "}
-            <span className="mono text-xs text-fg">0x10</span>, which {LEDGER_SYMBOL} already uses for its addresses.
+            proof, about 33,000 gas per signature as written and no signature in calldata. It gives leanSPHINCS the scheme
+            byte <span className="mono text-xs text-fg">0x10</span>, which {LEDGER_SYMBOL} already uses for its addresses.{" "}
+            <a href="#aggregation" className="text-accent-hi underline decoration-accent-hi/40 underline-offset-2 hover:decoration-accent-hi">
+              Aggregation
+            </a>{" "}
+            below shows how it works.
           </p>
         </div>
         <div className="rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5">

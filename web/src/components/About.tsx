@@ -1,13 +1,23 @@
 import { LEDGER_SYMBOL } from "../generated/contracts";
+import type { ReactNode } from "react";
 import { A, LINKS } from "./ext";
 
-const LIMITS = [
-  "The account that submits a transaction isn't quantum-secure. A quantum attacker who breaks it can spend its gas money and nothing else.",
-  "Nothing here is audited.",
-  "Each signature is 7,740 bytes, so a send costs about 290,000 gas, around 14 times a plain transfer.",
-  `All ${LEDGER_SYMBOL} sits in one contract, so a bug there affects every holder.`,
-  `leanSPHINCS isn't final. A new version means a new verifier and a new ${LEDGER_SYMBOL}.`,
-  "Keys live in this browser's local storage, which suits small amounts only.",
+const LIMITS: [string, ReactNode][] = [
+  ["submitter", "The account that submits a transaction isn't quantum-secure. A quantum attacker who breaks it can spend its gas money and nothing else."],
+  ["audit", "Nothing here is audited."],
+  [
+    "size",
+    <>
+      Each signature is 7,740 bytes, so a send costs about 290,000 gas, around 14 times a plain transfer. ETC can't{" "}
+      <a href="#aggregation" className="text-accent-hi underline decoration-accent-hi/40 underline-offset-2 hover:decoration-accent-hi">
+        aggregate
+      </a>{" "}
+      signatures yet.
+    </>,
+  ],
+  ["contract", `All ${LEDGER_SYMBOL} sits in one contract, so a bug there affects every holder.`],
+  ["final", `leanSPHINCS isn't final. A new version means a new verifier and a new ${LEDGER_SYMBOL}.`],
+  ["storage", "Keys live in this browser's local storage, which suits small amounts only."],
 ];
 
 const SPEC: [string, string][] = [
@@ -25,10 +35,10 @@ export function About() {
           Current Limitations
         </h2>
         <ul className="mt-3 space-y-2 text-[13px] leading-relaxed text-muted">
-          {LIMITS.map((l) => (
-            <li key={l} className="flex gap-2.5">
+          {LIMITS.map(([k, l]) => (
+            <li key={k} className="flex gap-2.5">
               <span className="mt-[0.55rem] size-1 shrink-0 rounded-full bg-warn" aria-hidden />
-              {l}
+              <span>{l}</span>
             </li>
           ))}
         </ul>

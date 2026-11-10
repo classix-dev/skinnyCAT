@@ -37,12 +37,20 @@ for (const s of [
   "Frame Transactions Instead of Meta-Transactions",
   "https://eips.ethereum.org/EIPS/eip-8141",
   "https://eips.ethereum.org/EIPS/eip-8288",
+  "Aggregation</h2>",
+  'id="aggregation"',
+  "the block contains one single recursive STARK that proves their existence",
+  "Five steps, shown here at the end.",
+  "1 proof",
+  "So for now skinnyCAT pays full price for every signature, and we say so.",
   "Current Limitations",
   "https://github.com/ethereum/EthLib/commit/dce7a2de23a973d84eac38126a1527763cd3465d",
   "Credits",
   "https://classix.dev",
 ])
   check(root.includes(s), `pre-rendered: ${s.replace(/&#x27;/g, "'")}`);
+
+check(root.includes('data-testid="agg-stage-wide"') && root.includes('data-testid="agg-stage-tall"') && !root.includes("agg-go"), "pre-rendered: the aggregation picture, still, at the end of step 5");
 
 // Nothing anywhere in the build mentions the old testnet.
 const files = readdirSync(dist, { recursive: true }).filter((f) => /\.(html|js|css|json|webmanifest|txt)$/.test(f));

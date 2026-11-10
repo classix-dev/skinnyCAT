@@ -1,7 +1,7 @@
 {
   "name": "skinnyCAT",
   "short_name": "skinnyCAT",
-  "description": "skinnyCAT. Quantum-secure transactions on Ethereum Classic, signed with leanSPHINCS in your browser. A proof of concept by Classix.",
+  "description": "skinnyCAT. Quantum-secure payments on Ethereum Classic, signed with leanSPHINCS in your browser. A proof of concept by Classix.",
   "start_url": "/",
   "display": "browser",
   "background_color": "#03050c",

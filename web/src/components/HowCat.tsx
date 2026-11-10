@@ -74,7 +74,23 @@ export function Item({ carry }: { carry: Carry }) {
           <Coin x={11.8} y={9.6} r={3.2} sc />
         </g>
       );
+    case "proof":
+      return <Proof x={7} y={6} r={6} />;
   }
+}
+
+/** A flat-topped hexagon of radius r around (x, y), as a path. */
+export const hexPath = (x: number, y: number, r: number) =>
+  [0, 1, 2, 3, 4, 5].map((i) => `${i ? "L" : "M"}${(x + r * Math.cos((i * Math.PI) / 3)).toFixed(2)} ${(y + r * Math.sin((i * Math.PI) / 3)).toFixed(2)}`).join("") + "Z";
+
+/** An aggregate proof, a cyan hexagon with a smaller one inside, the recursion. */
+export function Proof({ x, y, r }: { x: number; y: number; r: number }) {
+  return (
+    <g>
+      <path d={hexPath(x, y, r)} fill="color-mix(in oklab, var(--color-cyan) 22%, var(--color-ink-900))" stroke={CYAN} strokeWidth={Math.max(1, r / 6)} strokeLinejoin="round" />
+      <path d={hexPath(x, y, r * 0.5)} fill="none" stroke={CYAN} strokeWidth={Math.max(0.8, r / 9)} strokeLinejoin="round" opacity="0.75" />
+    </g>
+  );
 }
 
 /** What the cat does on a self-message, drawn over the item. */
@@ -110,7 +126,7 @@ export function CourierRunner({
   className,
   style,
 }: {
-  carry: Carry;
+  carry: Carry | null;
   left?: boolean;
   mode: CatMode;
   width?: number;
@@ -129,7 +145,7 @@ export function CourierRunner({
       focusable="false"
       data-testid="how-cat"
       data-mode={mode}
-      data-carry={carry}
+      data-carry={carry ?? undefined}
     >
       <g transform={left ? `translate(${CAT_W} 0) scale(-1 1)` : undefined} fill="none" strokeLinecap="round" strokeLinejoin="round">
         <g className={cx(mode === "run" && "how-gallop", mode === "act" && "how-nod")}>
@@ -159,7 +175,7 @@ export function CourierRunner({
           <g transform={self ? "translate(37.5 11.5)" : "translate(37.2 9.6)"} className={cx(carry === "credit" && mode === "act" && "how-pop-in")}>
             {/* Mirrored back when the cat faces left, so the check and the coin read the right way round. */}
             <g transform={left ? "translate(13.6 0) scale(-1 1)" : undefined}>
-              <Item carry={carry} />
+              {carry && <Item carry={carry} />}
             </g>
           </g>
         </g>

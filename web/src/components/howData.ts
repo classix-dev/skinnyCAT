@@ -18,7 +18,7 @@ export const COLS = PARTIES.length;
 
 export type Style = "call" | "reply" | "pay" | "offchain";
 /** What the cat carries along an arrow, or what it does in place on a self-message. */
-export type Carry = "note" | "deposit" | "check" | "fee" | "eth" | "sign" | "credit" | "stamp";
+export type Carry = "note" | "deposit" | "check" | "fee" | "eth" | "sign" | "credit" | "stamp" | "proof";
 export type Msg = { from: number; to: number; text: string; style?: Style; carry: Carry; caption: string };
 
 const S = LEDGER_SYMBOL;

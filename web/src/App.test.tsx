@@ -46,7 +46,7 @@ describe("empty page", () => {
     expect(screen.getByTestId("definition").textContent).toMatch(/quantum computer can't spend the funds.*only risks its own gas money/);
     for (const name of ["Two Cats, Two Keys", "The Cat Courier", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
       expect(screen.getByRole("heading", { name })).toBeTruthy();
-    expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first quantum-secure transaction on Ethereum Classic, by Classix.dev");
+    expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev");
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", true);
     expect(screen.getByTestId("alice-sign-only")).toHaveProperty("disabled", true);
     expect(screen.getByTestId("alice-hint").textContent).toBe("Create or import Alice's key first.");
@@ -179,7 +179,7 @@ describe("runs", () => {
   });
 
   test("the receipt shows the memo and links Blockscout", async () => {
-    const memo = "The first quantum-secure transaction on Ethereum Classic, by Classix.dev";
+    const memo = "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev";
     const all = Object.fromEntries(STEPS.map(([id]) => [id, ["ok", id === "explorer" ? "etc.blockscout.com" : "done"]])) as never;
     const r = run(all, { receipt: { memo, href: "https://etc.blockscout.com/tx/0xabc", fee: null } });
     r.steps = r.steps.map((x) => (x.id === "explorer" ? { ...x, href: "https://etc.blockscout.com/tx/0xabc" } : x));

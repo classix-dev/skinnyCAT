@@ -21,7 +21,7 @@ mkdirSync(SHOTS, { recursive: true });
 
 // anvil's default account 1 is the browser wallet. Account 0 deployed the contracts.
 const RELAYER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
-const MEMO = "The first quantum-secure transaction on Ethereum Classic, by Classix.dev";
+const MEMO = "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev";
 const FRESH = `0x${[...crypto.getRandomValues(new Uint8Array(20))].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 
 const abi = parseAbi([
@@ -325,6 +325,124 @@ async function howItWorks(browser) {
   }
 }
 
+const agg = {
+  fig: tid("agg-figure"),
+  step: (page) => page.getAttribute(tid("agg-figure"), "data-step").then(Number),
+  running: (page) =>
+    page.evaluate((s) => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.target?.closest?.(s)).length, tid("agg-figure")),
+};
+/** The run of each Aggregation step, as in src/components/aggData.ts. */
+const AGG_RUN_MS = [2000, 2200, 3400, 2600, 2600];
+
+async function aggScroll(page) {
+  await page.evaluate((s) => {
+    const r = document.querySelector(s).getBoundingClientRect();
+    window.scrollBy({ top: r.top - 64, behavior: "instant" });
+  }, tid("agg-figure"));
+}
+
+/** Freezes the Aggregation picture at fraction t of step n's run, on a fake clock, and screenshots the figure. */
+async function aggFrame(page, n, t, path) {
+  if ((await page.getAttribute(agg.fig, "data-playing")) === "1") await page.click(tid("agg-play"));
+  while ((await agg.step(page)) > n - 1 && (await agg.step(page)) > 1) await page.click(tid("agg-prev"));
+  if (n === 1) {
+    await page.click(tid("agg-replay"));
+    await page.click(tid("agg-play"));
+  } else {
+    while ((await agg.step(page)) < n - 1) await page.click(tid("agg-next"));
+    await page.click(tid("agg-next"));
+  }
+  if (t >= 1) await page.clock.runFor(AGG_RUN_MS[n - 1] + 50);
+  await page.evaluate(
+    ([t, ms]) => {
+      for (const a of document.getAnimations()) {
+        a.pause();
+        // Each actor's delay and duration sit inside the step's run, so one clock time places them all.
+        a.currentTime = Number.isFinite(a.effect.getTiming().duration) && a.effect.getTiming().iterations === 1 ? Math.min(t, 0.999) * ms : t * 1000;
+      }
+    },
+    [t, AGG_RUN_MS[n - 1]],
+  );
+  await page.waitForTimeout(40);
+  await aggScroll(page);
+  // The sticky header would sit over the top of the figure in an element screenshot.
+  await page.locator(agg.fig).screenshot({ path, style: "header { visibility: hidden !important; }" });
+}
+
+async function aggregation(browser) {
+  // Autoplay, the controls and a clean console, on the real timers.
+  for (const vp of [DESKTOP, MOBILE]) {
+    const tag = vp === DESKTOP ? "desktop" : "mobile";
+    const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: vp.width < 500 ? 2 : 1 });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, `agg ${tag}`);
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("steps")}[data-live="1"]`, { timeout: 30_000 });
+    check((await agg.step(page)) === 0, `agg ${tag}: the picture waits at the end of step 5 until it's seen`);
+    await aggScroll(page);
+    await page.waitForSelector(`${agg.fig}[data-playing="1"]`, { timeout: 5000 });
+    check(true, `agg ${tag}: autoplays when scrolled to`);
+    await page.waitForTimeout(400);
+    check((await agg.running(page)) > 0, `agg ${tag}: the picture moves (${await agg.running(page)} animations)`);
+    check((await page.getAttribute(tid("agg-caption"), "aria-live")) === "polite", `agg ${tag}: the caption is a polite live region`);
+    await page.waitForFunction((s) => Number(document.querySelector(s)?.dataset.step) >= 2, agg.fig, { timeout: 10_000 });
+    await page.click(tid("agg-play"));
+    check((await page.getAttribute(agg.fig, "data-playing")) === "0", `agg ${tag}: pause stops it`);
+    const at = await agg.step(page);
+    await page.click(tid("agg-next"));
+    check((await agg.step(page)) === at + 1 && (await page.textContent(tid("agg-caption"))).includes(`Step ${at + 1} of 5.`), `agg ${tag}: next moves to step ${at + 1}`);
+    await page.click(tid("agg-speed"));
+    await page.click(tid("agg-replay"));
+    await page.waitForFunction((s) => document.querySelector(s)?.dataset.step === "5" && document.querySelector(s)?.dataset.playing === "0", agg.fig, { timeout: 30_000 });
+    check(true, `agg ${tag}: replays to step 5 and stops`);
+    const sw = await page.evaluate(() => document.documentElement.scrollWidth);
+    check(sw <= vp.width, `agg ${tag}: page is ${sw}px wide`);
+    await ctx.close();
+  }
+
+  // Reduced motion: the end frame, still, and steps that don't move.
+  {
+    const ctx = await browser.newContext({ viewport: MOBILE, deviceScaleFactor: 2, reducedMotion: "reduce" });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, "agg reduced");
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("steps")}[data-live="1"]`, { timeout: 30_000 });
+    await aggScroll(page);
+    await page.waitForTimeout(1500);
+    check((await agg.step(page)) === 0 && (await page.getAttribute(agg.fig, "data-reduced")) === "1", "agg reduced: no autoplay");
+    check(!(await page.$(tid("agg-play"))), "agg reduced: step-through controls only");
+    check((await agg.running(page)) === 0, `agg reduced: nothing moves (${await agg.running(page)})`);
+    await page.screenshot({ path: `${SHOTS}agg-mobile-reduced-rest.png` });
+    await page.setViewportSize(DESKTOP);
+    await aggScroll(page);
+    await page.screenshot({ path: `${SHOTS}agg-desktop-reduced-rest.png` });
+    await page.setViewportSize(MOBILE);
+    await aggScroll(page);
+    for (let i = 0; i < 3; i++) await page.click(tid("agg-next"));
+    await page.waitForTimeout(300);
+    check((await agg.step(page)) === 3 && (await agg.running(page)) === 0, `agg reduced: next steps through, still (${await agg.running(page)} animations)`);
+    await ctx.close();
+  }
+
+  // Frames, on a fake clock.
+  for (const vp of [DESKTOP, MOBILE]) {
+    const tag = vp === DESKTOP ? "desktop" : "mobile";
+    const ctx = await browser.newContext({ viewport: vp, deviceScaleFactor: 2 });
+    await ctx.addInitScript(injectTestWallet, { rpc: RPC, account: RELAYER });
+    const page = await ctx.newPage();
+    watch(page, `agg frames ${tag}`);
+    await page.goto(APP);
+    await page.waitForSelector(`${tid("selftest")}[data-state-result]`, { timeout: 60_000 });
+    await page.clock.install();
+    await aggScroll(page);
+    const frames = [[1, 0.6], [2, 0.5], [3, 0.2], [3, 0.7], [4, 0.45], [5, 1]];
+    for (const [n, t] of frames) await aggFrame(page, n, t, `${SHOTS}agg-${tag}-step${n}-${String(Math.round(t * 100)).padStart(3, "0")}.png`);
+    await ctx.close();
+  }
+}
+
 const browser = await chromium.launch();
 try {
   // 0. With JavaScript off, the pre-rendered page still reads.
@@ -333,12 +451,13 @@ try {
     const page = await ctx.newPage();
     await page.goto(APP);
     check((await page.textContent("h1")) === "Quantum-Secure Payments on Ethereum Classic", "no-JS: h1 is there");
-    for (const id of ["disclaimer", "how", "frames", "limits", "spec", "credits"]) check(await page.isVisible(tid(id)), `no-JS: ${id} visible`);
+    for (const id of ["disclaimer", "how", "frames", "agg", "limits", "spec", "credits"]) check(await page.isVisible(tid(id)), `no-JS: ${id} visible`);
     await page.screenshot({ path: `${SHOTS}desktop-0-no-js.png`, fullPage: true });
     await ctx.close();
   }
 
   await howItWorks(browser);
+  await aggregation(browser);
 
   const { page } = await newPage(browser);
   check(!/wallet/i.test(await page.title()), `title: ${await page.title()}`);
@@ -361,6 +480,7 @@ try {
   await shots(page, "1-start");
   await shots(page, "1b-how-it-works", { scrollTo: tid("how") });
   await shots(page, "1c-frame-transactions", { scrollTo: tid("frames") });
+  await shots(page, "1d-aggregation", { scrollTo: tid("agg") });
 
   // 1. Two keys.
   await page.click(tid("alice-create"));

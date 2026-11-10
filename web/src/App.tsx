@@ -1,6 +1,7 @@
 import * as RTooltip from "@radix-ui/react-tooltip";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import { About } from "./components/About";
+import { Aggregation } from "./components/Aggregation";
 import { AliceStep } from "./components/AliceStep";
 import { BobStep } from "./components/BobStep";
 import { Footer } from "./components/Footer";
@@ -8,10 +9,30 @@ import { FrameTransactions } from "./components/FrameTransactions";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
+import { HydrateNear } from "./components/HydrateNear";
 import { KeysStep } from "./components/KeysStep";
 import { RelayerStep } from "./components/RelayerStep";
 import { start, useApp } from "./store";
 import { Explainer } from "./viz";
+
+// The two animated diagrams below the demo hydrate once they near the viewport, which keeps the
+// first hydration task short. The memos keep App's own re-renders (the store going live) from
+// reaching a boundary before it hydrates, which would make React drop the server HTML.
+const LateHowItWorks = memo(function LateHowItWorks() {
+  return (
+    <HydrateNear id="how-it-works">
+      <HowItWorks />
+    </HydrateNear>
+  );
+});
+
+const LateAggregation = memo(function LateAggregation() {
+  return (
+    <HydrateNear id="aggregation">
+      <Aggregation />
+    </HydrateNear>
+  );
+});
 
 /** The whole page. Pre-rendered at build time, then hydrated. Browser-only work starts in the effect. */
 export function App({ autoStart = true }: { autoStart?: boolean }) {
@@ -42,9 +63,10 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
             </div>
           </div>
           <div className="mt-24 space-y-24">
-            <HowItWorks />
+            <LateHowItWorks />
             <Explainer />
             <FrameTransactions />
+            <LateAggregation />
             <About />
           </div>
         </main>

@@ -1,10 +1,11 @@
 import { LEDGER_SYMBOL } from "../generated/contracts";
-import { ChevronLeft, ChevronRight, CornerDownRight, Pause, Play, RotateCcw } from "lucide-react";
-import { useRef, type CSSProperties, type ReactNode } from "react";
+import { CornerDownRight } from "lucide-react";
+import { useRef, type CSSProperties } from "react";
 import { CAT_H, CAT_W, CourierRunner, ItemIcon } from "./HowCat";
 import { balancesAfter, COLS, fmt, PARTIES, PHASES, runMs, sentence, STEPS, type Balances, type Msg, type Step, type Style } from "./howData";
-import { done, ended, LAST, speedOf, useHowPlayer, type Action, type Player } from "./howPlayer";
-import { Button, cx } from "./ui";
+import { done, LAST, speedOf, useHowPlayer, type Player } from "./howPlayer";
+import { PlayerControls } from "./PlayerControls";
+import { cx } from "./ui";
 
 // The sequence diagram from README.md, as HTML. Each message is a list item with a plain sentence for
 // screen readers. Wide screens draw lifelines and arrows, narrow ones a numbered list with a small
@@ -242,66 +243,6 @@ function Lane({ step, play, bal }: { step: Step | null; play: CatPlay | null; ba
 // The controls and the caption.
 // ---------------------------------------------------------------------------
 
-function Ctl({ label, onClick, off, pressed, children, testId }: { label: string; onClick: () => void; off?: boolean; pressed?: boolean; children: ReactNode; testId: string }) {
-  return (
-    <Button
-      size="icon"
-      variant="secondary"
-      aria-label={label}
-      title={label}
-      aria-disabled={off || undefined}
-      aria-pressed={pressed}
-      data-testid={testId}
-      onClick={() => !off && onClick()}
-      className={cx("aria-disabled:cursor-not-allowed aria-disabled:opacity-40", pressed && "bg-cyan/15 text-cyan ring-cyan/50 hover:bg-cyan/20")}
-    >
-      {children}
-    </Button>
-  );
-}
-
-function Controls({ s, dispatch }: { s: Player; dispatch: (a: Action) => void }) {
-  const go = (type: Action["type"]) => () => dispatch({ type } as Action);
-  const atEnd = ended(s);
-  return (
-    <div role="group" aria-label="Diagram player" className="flex shrink-0 items-center gap-1.5">
-      <Ctl label="Previous step" onClick={go("prev")} off={s.step <= 1} testId="how-prev">
-        <ChevronLeft className="size-4" aria-hidden />
-      </Ctl>
-      {!s.reduced &&
-        (s.playing ? (
-          <Ctl label="Pause" onClick={go("pause")} testId="how-play">
-            <Pause className="size-4" aria-hidden />
-          </Ctl>
-        ) : (
-          <Ctl label={atEnd ? "Play again from step 1" : "Play"} onClick={go("play")} testId="how-play">
-            <Play className="size-4" aria-hidden />
-          </Ctl>
-        ))}
-      <Ctl label="Next step" onClick={go("next")} off={s.step >= LAST} testId="how-next">
-        <ChevronRight className="size-4" aria-hidden />
-      </Ctl>
-      <Ctl label={s.reduced ? "Back to step 1" : "Replay from step 1"} onClick={go("replay")} testId="how-replay">
-        <RotateCcw className="size-4" aria-hidden />
-      </Ctl>
-      {!s.reduced && (
-        <Button
-          size="sm"
-          variant="secondary"
-          aria-pressed={s.fast}
-          aria-label="Double speed"
-          title="Double speed"
-          data-testid="how-speed"
-          onClick={go("speed")}
-          className={cx("mono w-11 px-0", s.fast && "bg-cyan/15 text-cyan ring-cyan/50 hover:bg-cyan/20")}
-        >
-          2×
-        </Button>
-      )}
-    </div>
-  );
-}
-
 function Caption({ s }: { s: Player }) {
   const step = s.step ? STEPS[s.step - 1] : null;
   return (
@@ -465,7 +406,7 @@ export function HowItWorks() {
           <Lane step={curStep} play={play} bal={bal} />
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:gap-4">
             <Caption s={s} />
-            <Controls s={s} dispatch={dispatch} />
+            <PlayerControls s={s} dispatch={dispatch} last={LAST} prefix="how" />
           </div>
         </div>
       </figure>

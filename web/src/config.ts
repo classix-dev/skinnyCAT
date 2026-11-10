@@ -39,7 +39,7 @@ export const DEADLINE_SECONDS = 3600;
 export const DEFAULTS = {
   deposit: "0.01",
   send: "0.004",
-  memo: "The first quantum-secure transaction on Ethereum Classic, by Classix.dev",
+  memo: "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
   bobAmount: "0.001",
   bobFee: "0.0015",
 };

@@ -408,6 +408,55 @@
   }
 }
 
+/* Aggregation. Each actor's inline transform and opacity are where it ends. A step's run plays
+   from --agg-f and --agg-fo, its pose at the end of the step before, with the duration and delay
+   set inline for that actor. */
+.agg-go {
+  animation-name: agg-move;
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.35, 1);
+  animation-fill-mode: both;
+  will-change: transform, opacity;
+}
+@keyframes agg-move {
+  from {
+    transform: var(--agg-f);
+    opacity: var(--agg-fo);
+  }
+}
+.agg-tick {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: agg-tick 1s steps(1, end) 3;
+}
+@keyframes agg-tick {
+  0% {
+    transform: scale(1.35);
+  }
+  30% {
+    transform: scale(1);
+  }
+}
+.agg-count {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: agg-count 0.5s cubic-bezier(0.3, 1.5, 0.6, 1);
+}
+@keyframes agg-count {
+  from {
+    transform: scale(0.4);
+  }
+}
+.agg-bar {
+  animation-name: agg-bar;
+  animation-timing-function: cubic-bezier(0.3, 0.6, 0.3, 1);
+  animation-fill-mode: both;
+}
+@keyframes agg-bar {
+  from {
+    transform: scaleX(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .cat-anim,
   .cat-glide,

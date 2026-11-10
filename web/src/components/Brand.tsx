@@ -3,7 +3,7 @@ import { cx } from "./ui";
 
 export { LogoMark };
 export const APP_NAME = "skinnyCAT";
-export const TAGLINE = "Quantum-Secure Transactions on Ethereum Classic";
+export const TAGLINE = "Quantum-Secure Payments on Ethereum Classic";
 
 /** The mark and the name, "skinny" in the text colour and "CAT" in the path's cyan. */
 export function Wordmark({ className }: { className?: string }) {
