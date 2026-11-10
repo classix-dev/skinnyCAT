@@ -1,0 +1,38 @@
+{
+  "name": "@classix/leansphincs-signer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "leanSPHINCS (layered 10+8+8, FORS 24x10, Keccak-256) signer, a TypeScript port of script/vendor/leansphincs_layered_signer.py",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "leansphincs-signer": "dist/cli.js"
+  },
+  "files": ["dist"],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "cli": "tsx src/cli.ts",
+    "bench": "tsx test/bench.ts"
+  },
+  "dependencies": {
+    "@noble/hashes": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}
