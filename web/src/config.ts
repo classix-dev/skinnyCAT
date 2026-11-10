@@ -48,7 +48,7 @@ export const NETWORKS: NetworkConfig[] = [
     testnet: false,
     enabled: false,
     currency: { name: "Ether Classic", symbol: "ETC", decimals: 18 },
-    rpcUrls: ["https://etc.etcdesktop.com", "https://etc.rivet.link"],
+    rpcUrls: ["https://rpc.classix.dev", "https://etc.etcdesktop.com"],
     explorer: "https://etc.blockscout.com",
     verifier: VERIFIER,
     factory: FACTORY,

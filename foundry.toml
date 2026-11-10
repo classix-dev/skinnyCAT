@@ -14,5 +14,5 @@ ffi = true
 fs_permissions = [{ access = "read", path = "./test/fixtures" }]
 
 [rpc_endpoints]
-mordor = "${MORDOR_RPC_URL}"
-classic = "${CLASSIC_RPC_URL}"
+mordor = "https://rpc.mordor.etccooperative.org"
+classic = "https://rpc.classix.dev"
