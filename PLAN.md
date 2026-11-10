@@ -43,7 +43,7 @@ Done 2026-11-10. 25 Foundry tests and 44 signer tests pass, every EthLib vector 
 
 ### M4. Mainnet Deploy and the First Transaction
 
-Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends scETC to Bob in one transaction, with the memo "The first quantum-secure transaction on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
+Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends scETC to Bob in one transaction, with the memo "The first quantum-secure signature on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
 
 It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the deploys and the demo come to about 0.004 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract.
 
@@ -83,5 +83,5 @@ Most of a send is the 7,740-byte signature, about 124,000 gas of calldata, and i
 - How users back up keys. EthLib's secret key is a 32-byte seed. A BIP-39 phrase that encodes it is the likely choice. We rule out deriving the seed from an ECDSA wallet signature, because a quantum attacker who recovers the ECDSA key could recompute the seed.
 - Whether we verify contract source on Blockscout. That publishes the code, so we ask istora first. This repo stays private until istora says otherwise.
 - leanSPHINCS isn't final. A new version means a new verifier and a new scETC, and we don't plan upgradeable contracts.
-- Whether "first" holds. We haven't found an earlier hash-based signature transaction on ETC, but we haven't searched the chain.
+- Whether "first" holds. The claim is the first quantum-secure signature on ETC, not the first quantum-secure transaction, since hash-preimage locks exist. We haven't found an earlier post-quantum signature verified on ETC, but we haven't searched the chain. The memo wording needs istora's confirmation before the mainnet transaction.
 - Audit. None of this is audited. The site says so and suggests tiny amounts only.

@@ -1,10 +1,12 @@
 # pq-sig
 
-The first quantum-secure transaction on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at pq.classix.dev where anyone can make their own.
+The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at pq.classix.dev where anyone can make their own.
 
 This is a proof of concept and an experiment, built for fun. It isn't meant for real use. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
 Quantum-secure here means a quantum computer can't spend the funds. The gas is still paid by an ordinary account, which only risks its own gas money (see [Current Limitations](#current-limitations)).
+
+We say first signature, not first transaction. Funds locked to a hash preimage, as in a hashed timelock contract, are also out of a quantum computer's reach, and ETC has very likely seen those already. What we think is new is a post-quantum signature verified on ETC.
 
 ## The Approach
 
