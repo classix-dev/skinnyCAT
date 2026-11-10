@@ -170,7 +170,6 @@ const be32 = (c: number) => new Uint8Array([c >>> 24, c >>> 16, c >>> 8, c]);
 // Ots.lean
 // ---------------------------------------------------------------------------
 
-const adrsChain = (k: OtsKey, i: number, mu: number): Adrs => [k.layer, k.tree, WOTS_HASH, k.leaf, i, mu];
 const adrsPk = (k: OtsKey): Adrs => [k.layer, k.tree, WOTS_PK, k.leaf, 0, 0];
 const adrsNode = (layer: number, tree: number, z: number, j: number): Adrs => [layer, tree, TREE, 0, z, j];
 const adrsPrf = (k: OtsKey, i: number): Adrs => [k.layer, k.tree, WOTS_PRF, k.leaf, i, 0];
