@@ -43,9 +43,14 @@ contract LeanSphincsLedger {
         symbol = symbol_;
     }
 
-    /// @notice The ledger account of a leanSPHINCS public key.
+    /// The scheme byte EIP-8288 gives leanSPHINCS (LEANSPHINCS_SCHEME).
+    bytes1 public constant LEANSPHINCS_SCHEME = 0x10;
+
+    /// @notice The ledger account of a leanSPHINCS public key: the last 20 bytes of
+    ///         keccak256(0x10 ‖ PK.seed ‖ PK.root), Ethereum's usual address shape, tagged with the
+    ///         scheme byte so another scheme's key can't land on the same account.
     function accountOf(bytes32 pkSeed, bytes32 pkRoot) public pure returns (address) {
-        return address(uint160(uint256(keccak256(abi.encode(pkSeed, pkRoot)))));
+        return address(uint160(uint256(keccak256(abi.encodePacked(LEANSPHINCS_SCHEME, bytes16(pkSeed), bytes16(pkRoot))))));
     }
 
     /// @notice Deposit ETC to a key.

@@ -107,3 +107,14 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Footer credits live in index.html. */
+.credits a {
+  color: var(--color-muted);
+  text-decoration: underline;
+  text-decoration-color: var(--color-ink-500);
+  text-underline-offset: 3px;
+}
+.credits a:hover {
+  color: var(--color-fg);
+}

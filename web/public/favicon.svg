@@ -1,7 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-309.02 0 618.03 1000">
-  <g fill="#A8F0A0">
-    <path d="M0 0 295.37 449.66 0 323.81-295.37 449.66Z"/>
-    <path d="M0 384.58 309.02 516.33 0 684.35-309.02 516.33Z"/>
-    <path d="M-300.83 585.94 0 756.46 300.83 585.94 0 1000Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#0a1020"/>
+  <g transform="translate(2.4 2.6) scale(0.85)" fill="none">
+    <g stroke="#4c8dff" stroke-opacity="0.55" stroke-width="1.9" stroke-linecap="round">
+      <path d="M16 6 9 16M9 16l-3.5 10M9 16l3.5 10M23 16l3.5 10"/>
+    </g>
+    <path d="M16 6 23 16l-3.5 10" stroke="#5ee4ff" stroke-width="2.3" stroke-linecap="round"/>
+    <g fill="#4c8dff" fill-opacity="0.75">
+      <circle cx="9" cy="16" r="2.4"/><circle cx="5.5" cy="26" r="2.2"/><circle cx="12.5" cy="26" r="2.2"/><circle cx="26.5" cy="26" r="2.2"/>
+    </g>
+    <g fill="#5ee4ff">
+      <rect x="12.4" y="2.4" width="7.2" height="7.2" rx="1.9"/><circle cx="23" cy="16" r="2.8"/><circle cx="19.5" cy="26" r="2.6"/>
+    </g>
   </g>
 </svg>
