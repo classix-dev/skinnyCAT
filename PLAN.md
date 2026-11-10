@@ -43,7 +43,7 @@ Done 2026-11-10. 25 Foundry tests and 44 signer tests pass, every EthLib vector 
 
 ### M4. Mainnet Deploy and the First Transaction
 
-Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends scETC to Bob in one transaction, with the memo "The first quantum-secure signature on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
+Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. Then Alice deposits ETC and sends scETC to Bob in one transaction, with the memo "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev". Then Bob pays back through a relayer and withdraws to a fresh address. Addresses and transaction hashes go in `docs/deployments.md`.
 
 It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the deploys and the demo come to about 0.004 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract.
 
