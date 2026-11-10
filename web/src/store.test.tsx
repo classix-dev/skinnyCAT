@@ -45,7 +45,7 @@ describe("before start", () => {
   test("rendering touches no browser storage", () => {
     const spy = vi.spyOn(Storage.prototype, "getItem");
     const html = renderToString(<App autoStart={false} />);
-    expect(html).toContain("Two Keys");
+    expect(html).toContain("Two Cats, Two Keys");
     expect(spy).not.toHaveBeenCalled();
     expect(s().live).toBe(false);
   });

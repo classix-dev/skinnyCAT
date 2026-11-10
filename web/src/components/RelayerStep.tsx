@@ -1,6 +1,7 @@
-import { Info, Wallet } from "lucide-react";
+import { Wallet } from "lucide-react";
 import { fmt } from "../lib/format";
 import { connectProvider, useApp } from "../store";
+import { CourierCat, EmptyBox } from "./Cats";
 import { Row, StepCard } from "./StepCard";
 import { Button, HexValue, StatusLine } from "./ui";
 import { addressUrl } from "../config";
@@ -8,11 +9,14 @@ import { addressUrl } from "../config";
 export function RelayerStep() {
   const s = useApp();
   return (
-    <StepCard id="step-relayer" n={2} title="Browser Wallet" done={!!s.conn}>
-      <p className="text-[13px] leading-relaxed text-muted">
-        An ordinary account pays the gas. It deposits Alice's ETC and relays what Bob signs, for the fee Bob signs for.
-        It can't change a signed message, and it only risks its own gas money.
-      </p>
+    <StepCard id="step-relayer" n={2} title="The Cat Courier" done={!!s.conn}>
+      <div className="flex items-start gap-3">
+        <CourierCat className="mt-0.5 h-8 w-10 shrink-0" />
+        <p className="text-[13px] leading-relaxed text-muted">
+          Your browser wallet plays the cat courier. It pays the gas and carries Alice's ETC in. For Bob, it relays the note
+          he signs and keeps the fee he signed for. It can't change a signed note, and it only risks its own gas money.
+        </p>
+      </div>
       <div className="mt-4">{s.conn ? <Connected /> : <Pick />}</div>
     </StepCard>
   );
@@ -32,10 +36,10 @@ function Pick() {
           ))}
         </div>
       ) : (
-        <p className="flex items-start gap-1.5 text-xs text-subtle" data-testid="web3-none">
-          <Info className="mt-px size-3.5 shrink-0" aria-hidden />
+        <p className="flex items-center gap-2.5 text-xs text-subtle" data-testid="web3-none">
+          <EmptyBox className="h-6 w-7.5 shrink-0" />
           {live
-            ? "No browser wallet found. Install one that supports Ethereum Classic, or use Sign Only below."
+            ? "No browser wallet found, so the courier's box is empty. Install one that supports Ethereum Classic, or use Sign Only below."
             : "Looking for browser wallets."}
         </p>
       )}

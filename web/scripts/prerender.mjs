@@ -8,7 +8,7 @@ const MARK = "<!--app-html-->";
 if (!html.includes(MARK)) throw new Error(`dist/index.html has no ${MARK}`);
 const { render } = await import(new URL("../.ssr/entry-server.js", import.meta.url).href);
 const body = render();
-for (const s of ["How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "Two Keys"])
+for (const s of ["How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "Two Cats, Two Keys"])
   if (!body.includes(s)) throw new Error(`pre-rendered HTML lacks "${s}"`);
 writeFileSync(dist, html.replace(MARK, body));
 rmSync(new URL("../.ssr/", import.meta.url), { recursive: true, force: true });

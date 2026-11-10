@@ -23,7 +23,11 @@ check(!/wallet/i.test(h1), "h1 doesn't say wallet");
 for (const s of [
   "A proof of concept and an experiment, built for fun.",
   "quantum computer can&#x27;t spend the funds",
-  "Two Keys",
+  "Two Cats, Two Keys",
+  ">skinny<span",
+  "more lives than any cat needs",
+  "A leanSPHINCS key is just fine.",
+  "The cat is a quantum joke.",
   "Alice Deposits and Pays Bob",
   "Bob Pays Back Without ETC",
   "Bob never needs ETC.",

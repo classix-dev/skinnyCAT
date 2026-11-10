@@ -1,5 +1,6 @@
 import { Check, ExternalLink, MessageSquareQuote, X } from "lucide-react";
 import type { Run, Step } from "../store";
+import { CatStage, OopsCat } from "./Cats";
 import { CopyButton, HexValue, Progress, Spinner, cx } from "./ui";
 
 /** The progress of one run, message to explorer, and the memo once the receipt is in. */
@@ -13,6 +14,7 @@ export function Timeline({ run, label, testId }: { run: Run; label: string; test
           <StepRow key={st.id} st={st} last={i === shown.length - 1} />
         ))}
       </ol>
+      <CatStage run={run} testId={`${testId}-stage`} />
       {run.receipt?.memo && (
         <figure className="rounded-xl bg-accent/[0.06] p-3 ring-1 ring-accent/25 ring-inset sm:p-4" data-testid={`${testId}-memo`}>
           <figcaption className="flex items-center gap-1.5 text-xs text-muted">
@@ -104,7 +106,8 @@ function StepRow({ st, last }: { st: Step; last: boolean }) {
           ) : (
             <div className="flex flex-wrap items-center gap-x-2 sm:justify-end">
               {st.value && <HexValue value={st.value} label={st.label.toLowerCase()} href={st.href} head={10} tail={6} />}
-              {st.text && <span className={cx(st.state !== "fail" && "mono")}>{st.text}</span>}
+              {st.state === "fail" && <OopsCat className="mt-0.5 size-4 shrink-0 self-start" />}
+              {st.text && <span className={cx(st.state === "fail" ? "min-w-0 flex-1" : "mono")}>{st.text}</span>}
             </div>
           )}
           {st.state === "run" && st.progress !== undefined && (

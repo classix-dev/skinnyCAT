@@ -4,6 +4,7 @@ import { LEDGER_SYMBOL } from "../generated/contracts";
 import { NAMES, seedToPhrase, type Who } from "../key";
 import { fmt } from "../lib/format";
 import { accountUrl, cancelImport, createKey, disarmImport, forgetKey, importPhrase, openImport, refreshAll, useApp } from "../store";
+import { CatAvatar } from "./Cats";
 import { Row, StepCard } from "./StepCard";
 import { Button, CopyButton, HexValue, Progress, StatusLine, Tip, cx, inputClass } from "./ui";
 
@@ -14,7 +15,7 @@ export function KeysStep() {
     <StepCard
       id="step-keys"
       n={1}
-      title="Two Keys"
+      title="Two Cats, Two Keys"
       done={both}
       aside={
         (keys.alice.key || keys.bob.key) && (
@@ -28,7 +29,7 @@ export function KeysStep() {
     >
       <p className="mb-4 text-[13px] leading-relaxed text-muted">
         Each key is made in this browser and lives only here. Its {LEDGER_SYMBOL} account is a hash of the public key, so no
-        ECDSA key controls it.
+        ECDSA key controls it. One key signs up to 2<sup>30</sup> times, more lives than any cat needs.
       </p>
       <div className="divide-y divide-white/[0.06] rounded-xl bg-ink-950/50 ring-1 ring-ink-700 ring-inset">
         <KeyPanel who="alice" />
@@ -45,16 +46,19 @@ function KeyPanel({ who }: { who: Who }) {
       <div className="flex items-center gap-2">
         <span
           className={cx(
-            "flex size-6 items-center justify-center rounded-full text-[11px] font-semibold",
-            who === "alice" ? "bg-accent/15 text-accent-hi ring-1 ring-accent/30" : "bg-cyan/10 text-cyan ring-1 ring-cyan/25",
+            "flex size-8 items-center justify-center rounded-full",
+            who === "alice" ? "bg-accent/10 text-accent-hi ring-1 ring-accent/30" : "bg-cyan/[0.07] text-cyan ring-1 ring-cyan/25",
           )}
           aria-hidden
+          data-testid={`${who}-avatar`}
+          data-awake={slot.view === "have" ? "1" : undefined}
         >
-          {NAMES[who][0]}
+          <CatAvatar who={who} awake={slot.view === "have"} className="size-7" />
         </span>
         <h3 id={`${who}-title`} className="text-sm font-semibold text-fg">
           {NAMES[who]}
         </h3>
+        <span className="text-xs text-subtle">{who === "alice" ? "the well-fed one" : "the skinny stray"}</span>
         {slot.view === "have" && (
           <span className="ml-auto flex items-baseline gap-1 text-sm" aria-live="polite">
             <span className="font-semibold tabular-nums text-fg" data-testid={`${who}-balance`}>
@@ -88,6 +92,9 @@ function NoKey({ who }: { who: Who }) {
           Import Phrase
         </Button>
       </div>
+      <p className="text-xs text-subtle" data-testid={`${who}-napping`}>
+        No key yet, so {NAMES[who]} is napping.
+      </p>
       {error && <StatusLine tone="error">{error}</StatusLine>}
     </div>
   );

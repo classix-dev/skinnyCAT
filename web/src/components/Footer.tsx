@@ -1,3 +1,4 @@
+import { SitCat } from "./Cats";
 import { ByClassix } from "./ClassixWordmark";
 import { LINKS } from "./ext";
 
@@ -27,7 +28,15 @@ export function Footer() {
             ))}
           </ul>
         </div>
-        <ByClassix className="text-xs" />
+        <div className="flex flex-col gap-3 md:items-end">
+          <ByClassix className="text-xs" />
+          <p className="flex items-end gap-2 text-subtle" data-testid="no-cats-harmed">
+            <svg viewBox="-9 -24 18 25" className="h-5 w-4 shrink-0" aria-hidden="true" focusable="false">
+              <SitCat />
+            </svg>
+            No cats were harmed, and none were put in superposition.
+          </p>
+        </div>
       </div>
     </footer>
   );

@@ -44,7 +44,7 @@ describe("empty page", () => {
     expect(h1.textContent).not.toMatch(/wallet/i);
     expect(screen.getByTestId("disclaimer").textContent).toMatch(/proof of concept and an experiment, built for fun.*isn't meant for real use.*audited.*tiny amounts/i);
     expect(screen.getByTestId("definition").textContent).toMatch(/quantum computer can't spend the funds.*only risks its own gas money/);
-    for (const name of ["Two Keys", "Browser Wallet", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
+    for (const name of ["Two Cats, Two Keys", "The Cat Courier", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first quantum-secure transaction on Ethereum Classic, by Classix.dev");
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", true);
@@ -223,5 +223,95 @@ describe("pre-rendering", () => {
     expect(el.querySelector('[data-testid="alice-balance"]')?.textContent).toBe("1");
     await reactAct(async () => root.unmount());
     el.remove();
+  });
+});
+
+describe("skinnyCAT", () => {
+  test("the name, the Schrödinger line and the plain statement of what protects the funds", () => {
+    render(<App autoStart={false} />);
+    expect(screen.getByTestId("wordmark").textContent).toBe("skinnyCAT");
+    expect(screen.getByRole("link", { name: "skinnyCAT home" })).toBeTruthy();
+    expect(screen.getByTestId("schrodinger").textContent).toBe(
+      "Until a quantum computer looks, an ECDSA key is fine and broken at the same time. A leanSPHINCS key is just fine.",
+    );
+    expect(screen.getByTestId("definition").textContent).toMatch(/The cat is a quantum joke\. Hash-based signatures protect the funds/);
+    expect(document.getElementById("step-keys")?.textContent).toMatch(/2\s*30 times, more lives than any cat needs/);
+    expect(document.body.textContent).not.toMatch(/hypertree/i);
+  });
+
+  test("the cats nap until they have keys, and the art stays out of the accessibility tree", () => {
+    __setState({ keys: { alice: haveKey(0n), bob: initialState().keys.bob } });
+    render(<App autoStart={false} />);
+    expect(screen.getByTestId("alice-avatar").dataset.awake).toBe("1");
+    expect(screen.getByTestId("bob-avatar").dataset.awake).toBeUndefined();
+    expect(screen.getByTestId("bob-napping").textContent).toBe("No key yet, so Bob is napping.");
+    for (const svg of document.querySelectorAll("svg")) expect(svg.closest('[aria-hidden="true"]')).toBeTruthy();
+  });
+
+  test("no stage before signing starts, or when the message is refused before signing", () => {
+    __setState({ runs: { alice: run({ message: ["run"] }), bob: run({ message: ["fail", "Bob holds 0"] }) } });
+    render(<App autoStart={false} />);
+    expect(screen.queryByTestId("alice-run-stage")).toBeNull();
+    expect(screen.queryByTestId("bob-run-stage")).toBeNull();
+  });
+
+  test("while signing, the cat climbs as far as the signature has got", () => {
+    __setState({ busy: "alice", runs: { alice: run({ message: ["ok"], signature: ["run", "signing", 0.5] }), bob: null } });
+    render(<App autoStart={false} />);
+    const stage = screen.getByTestId("alice-run-stage");
+    expect(stage.dataset.scene).toBe("climb");
+    expect(within(stage).getByRole("status").textContent).toMatch(/cat climbs along/);
+    // The hero tree's cat is part way up too.
+    const climbers = document.querySelectorAll<SVGGElement>('[data-testid="climber"]');
+    expect(climbers.length).toBe(2);
+    for (const c of climbers) expect(c.getAttribute("style")).toMatch(/translate\(/);
+  });
+
+  test("verifying puts the signature in the box", () => {
+    __setState({ runs: { alice: run({ message: ["ok"], signature: ["ok"], local: ["run"] }), bob: null } });
+    render(<App autoStart={false} />);
+    expect(screen.getByTestId("alice-run-stage").dataset.scene).toBe("verify");
+  });
+
+  test("a valid signature opens the box and the cat jumps out", async () => {
+    __setState({ runs: { alice: null, bob: run({ message: ["ok"], signature: ["ok"], local: ["ok"], onchain: ["ok"], simulate: ["run"] }) } });
+    const { container } = render(<App autoStart={false} />);
+    const stage = screen.getByTestId("bob-run-stage");
+    expect(stage.dataset.scene).toBe("open");
+    expect(within(stage).getByRole("status").textContent).toBe("Valid. The box opens and the cat jumps out.");
+    expect(within(stage).getByTestId("box-cat")).toBeTruthy();
+    await noAxeViolations(container);
+  });
+
+  test("an invalid signature leaves the box shut, with no cat", () => {
+    __setState({ runs: { alice: run({ message: ["ok"], signature: ["ok"], local: ["ok"], onchain: ["fail", "the verifier returned false"] }), bob: null } });
+    render(<App autoStart={false} />);
+    const stage = screen.getByTestId("alice-run-stage");
+    expect(stage.dataset.scene).toBe("shut");
+    expect(within(stage).getByRole("status").textContent).toBe("Not valid, so the box stays shut.");
+    expect(within(stage).queryByTestId("box-cat")).toBeNull();
+  });
+
+  test("a relayer that changes the note gets a BadSignature revert, and the box shuts", () => {
+    const r = run({ message: ["ok"], signature: ["ok"], local: ["ok"], onchain: ["ok"], simulate: ["ok"], sent: ["ok"], confirmed: ["fail", "The transaction reverted with BadSignature()."] });
+    __setState({ runs: { alice: null, bob: r } });
+    render(<App autoStart={false} />);
+    expect(screen.getByTestId("bob-run-stage").dataset.scene).toBe("shut");
+    expect(within(screen.getByTestId("bob-run-stage")).getByRole("status").textContent).toMatch(/changed on the way.*box stays shut/);
+  });
+
+  test("a send that fails for another reason keeps the box open, since the signature was fine", () => {
+    const r = run({ message: ["ok"], signature: ["ok"], local: ["ok"], onchain: ["ok"], simulate: ["ok"], sent: ["fail", "User rejected the request."] });
+    __setState({ runs: { alice: null, bob: r } });
+    render(<App autoStart={false} />);
+    expect(screen.getByTestId("bob-run-stage").dataset.scene).toBe("open");
+  });
+
+  test("errors come with a startled cat that is decorative only", () => {
+    __setState({ bob: { ...initialState().bob, error: "The address to withdraw to isn't valid." } });
+    render(<App autoStart={false} />);
+    const alert = within(screen.getByTestId("bob-hint")).getByRole("alert");
+    expect(alert.querySelector('svg[aria-hidden="true"]')).toBeTruthy();
+    expect(alert.textContent).toBe("The address to withdraw to isn't valid.");
   });
 });

@@ -186,6 +186,14 @@ try {
 
   const { page } = await newPage(browser);
   check(!/wallet/i.test(await page.title()), `title: ${await page.title()}`);
+  check((await page.title()).startsWith("skinnyCAT · "), "the title names skinnyCAT");
+  const ogImage = await page.getAttribute('meta[property="og:image"]', "content");
+  check(ogImage === "https://pq.classix.dev/og.png", `og:image is ${ogImage}`);
+  for (const f of ["og.png", "favicon.svg", "favicon.ico", "icon-512.png", "404.html"]) {
+    const res = await page.request.get(new URL(f, APP).href);
+    check(res.ok(), `/${f} is served (${res.status()})`);
+  }
+  check(!/hypertree/i.test(await page.content()), "no hypertree on the page");
   await page.waitForSelector(`${tid("selftest")}[data-state-result]`, { timeout: 60_000 });
   const selftestOk = (await page.getAttribute(tid("selftest"), "data-state-result")) === "ok";
   check(selftestOk, `self-tests: ${await page.textContent(tid("selftest-label"))}`);
@@ -225,7 +233,11 @@ try {
   await page.fill(tid("alice-deposit"), "1");
   await page.fill(tid("alice-amount"), "0.4");
   check((await page.inputValue(tid("alice-memo"))) === MEMO, "memo is pre-filled");
-  const a = await runFlow(page, "alice", "alice-go", { onSigning: () => shots(page, "3-alice-signing") });
+  const a = await runFlow(page, "alice", "alice-go", { onSigning: async () => {
+    check((await page.getAttribute(tid("alice-run-stage"), "data-scene")) === "climb", "while signing, the cat climbs");
+    check((await page.$$(`${tid("hero-tree")} ${tid("climber")}`)).length === 1, "the hero tree has its climber");
+    await shots(page, "3-alice-signing");
+  } });
   check(a.message?.detail.includes("matches transferDigest()"), `message: ${a.message?.detail}`);
   check(a.signature?.detail.startsWith("7,740 bytes"), `signature: ${a.signature?.detail}`);
   check(a.onchain?.state === "ok", `on-chain verify: ${a.onchain?.detail}`);
@@ -242,6 +254,11 @@ try {
   check(memoLink === `https://etc.blockscout.com/tx/${hashA}`, `memo links Blockscout: ${memoLink}`);
   check((await page.getAttribute(`${tid("alice-run")} ${tid("step-explorer")} a`, "href")) === `https://etc.blockscout.com/tx/${hashA}`, "explorer step links Blockscout");
   await waitBalance(page, "bob", "0.4");
+  check((await page.getAttribute(tid("alice-run-stage"), "data-scene")) === "open", "a valid signature opens the box");
+  check(/The box opens and the cat jumps out/.test(await page.textContent(tid("alice-run-stage"))), "and says so");
+  await page.waitForFunction((s) => document.querySelector(s)?.getAnimations({ subtree: true }).every((a) => a.playState === "finished"), tid("alice-run-stage"));
+  check(await page.isVisible(`${tid("alice-run-stage")} ${tid("box-cat")}`), "the cat is out of the box");
+  await shots(page, "4c-box-open", { scrollTo: tid("alice-run-stage") });
   await shots(page, "4-alice-sent");
   await shots(page, "4b-alice-receipt", { scrollTo: tid("alice-run-memo") });
 
@@ -284,13 +301,20 @@ try {
   // 6. Sign Only: signs and checks, sends nothing.
   const callsBefore = await page.evaluate(() => window.__walletCalls.filter((c) => c.method === "eth_sendTransaction").length);
   const nonceBefore = await nonceOf(alice);
+  await page.emulateMedia({ reducedMotion: "reduce" });
   const so = await runFlow(page, "alice", "alice-sign-only", { ids: ["message", "signature", "local", "onchain"] });
+  check((await page.getAttribute(tid("alice-run-stage"), "data-scene")) === "open", "reduced motion: the box opens");
+  const moving = await page.evaluate(() => document.getAnimations().filter((a) => a.playState === "running" && a.effect?.target?.closest?.('[data-testid$="-stage"], [data-testid="hero-tree"]')).length);
+  check(moving === 0, `reduced motion: no cat animations run (${moving})`);
+  const pose = await page.$eval(`${tid("alice-run-stage")} ${tid("box-cat")}`, (el) => getComputedStyle(el).transform);
+  check(pose === "none" || pose === "matrix(1, 0, 0, 1, 0, 0)", `reduced motion: the cat holds its final pose (${pose})`);
   check(Object.values(so).every((x) => x.state === "ok"), "Sign Only: message, signature, local and on-chain checks pass");
   check((await page.$$(`${tid("alice-run")} li[data-testid^="step-"]`)).length === 4, "Sign Only shows four steps");
   check(await page.isVisible(tid("alice-run-signed")), "Sign Only offers the signature");
   const callsAfter = await page.evaluate(() => window.__walletCalls.filter((c) => c.method === "eth_sendTransaction").length);
   check(callsAfter === callsBefore && (await nonceOf(alice)) === nonceBefore, "nothing was sent");
   await shots(page, "7-sign-only");
+  await page.emulateMedia({ reducedMotion: "no-preference" });
 
   // 7. Errors. Too much: refused at the message step, before signing.
   await page.click(tid("bob-kind-transfer"));
@@ -298,6 +322,7 @@ try {
   const ins = await runFlow(page, "bob", "bob-go");
   check(ins.message?.state === "fail" && ins.message.detail.startsWith(`Bob holds 0.098 ${SYM}, less than the 5.001 ${SYM}`), `insufficient balance: ${ins.message?.detail}`);
   check((await page.getAttribute(`${tid("bob-run")} ${tid("step-signature")}`, "data-state")) === "idle", "nothing signed");
+  check(!(await page.isVisible(tid("bob-run-stage"))), "nothing signed, so no cat and no box");
   await shots(page, "8-insufficient");
 
   // A bad form value.
@@ -313,6 +338,10 @@ try {
   await page.evaluate(() => (window.__tamper = false));
   check(t.confirmed?.state === "fail" && /reverted.*BadSignature/.test(t.confirmed.detail), `tampered relay rejected: ${t.confirmed?.detail}`);
   check((await pq(bob)) === bobBefore, "Bob's balance didn't move");
+  check((await page.getAttribute(tid("bob-run-stage"), "data-scene")) === "shut", "the changed note leaves the box shut");
+  check(/changed on the way/.test(await page.textContent(tid("bob-run-stage"))), "and the stage says the note was changed");
+  check(!(await page.isVisible(`${tid("bob-run-stage")} ${tid("box-cat")}`)), "and no cat comes out");
+  await shots(page, "9b-box-shut", { scrollTo: tid("bob-run-stage") });
   await shots(page, "9-tampered");
 
   // A bad phrase.

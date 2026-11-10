@@ -2,6 +2,7 @@ import * as RTooltip from "@radix-ui/react-tooltip";
 import { Check, Copy, ExternalLink, LoaderCircle } from "lucide-react";
 import { useEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { short } from "../lib/format";
+import { OopsCat } from "./Cats";
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(" ");
 
@@ -205,10 +206,18 @@ export function StatusLine({
       data-testid={testId}
       className={cx(
         "text-[13px] leading-relaxed break-words whitespace-pre-line",
+        tone === "error" && "flex items-start gap-2",
         tone === "error" ? "text-bad" : tone === "ok" ? "text-cyan" : "text-muted",
       )}
     >
-      {children}
+      {tone === "error" ? (
+        <>
+          <OopsCat className="mt-px size-[18px] shrink-0" />
+          <span className="min-w-0">{children}</span>
+        </>
+      ) : (
+        children
+      )}
     </p>
   );
 }

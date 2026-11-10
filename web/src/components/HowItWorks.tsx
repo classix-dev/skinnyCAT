@@ -136,7 +136,7 @@ export function HowItWorks() {
       </h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
         Alice pays Bob, Bob pays back without owning any ETC, then Bob takes ETC out to a fresh address. On this page one
-        browser wallet plays both Alice's wallet and the relayer.
+        browser wallet plays both Alice's wallet and the relayer. We kept the cats out of the diagram so it stays exact.
       </p>
       <figure className="mt-6 overflow-hidden rounded-2xl bg-ink-900/70 ring-1 ring-white/[0.07] ring-inset" aria-labelledby="how-caption">
         <figcaption id="how-caption" className="sr-only">

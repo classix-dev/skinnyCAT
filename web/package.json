@@ -10,6 +10,7 @@
     "build": "tsc --noEmit && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr --emptyOutDir && node scripts/prerender.mjs",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
+    "icons": "node --experimental-strip-types --no-warnings scripts/icons.mjs",
     "test": "vitest run",
     "test:e2e": "bash e2e/run.sh",
     "test:all": "npm test && npm run test:e2e"
