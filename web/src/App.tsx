@@ -11,6 +11,7 @@ import { HowItWorks } from "./components/HowItWorks";
 import { KeysStep } from "./components/KeysStep";
 import { RelayerStep } from "./components/RelayerStep";
 import { start, useApp } from "./store";
+import { Explainer } from "./viz";
 
 /** The whole page. Pre-rendered at build time, then hydrated. Browser-only work starts in the effect. */
 export function App({ autoStart = true }: { autoStart?: boolean }) {
@@ -42,6 +43,7 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
           </div>
           <div className="mt-24 space-y-24">
             <HowItWorks />
+            <Explainer />
             <FrameTransactions />
             <About />
           </div>

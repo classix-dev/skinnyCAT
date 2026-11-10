@@ -4,7 +4,10 @@ import { useEffect, useState, useSyncExternalStore, type RefObject } from "react
 
 const RM = "(prefers-reduced-motion: reduce)";
 
+const hasMM = () => typeof window !== "undefined" && typeof window.matchMedia === "function";
+
 function subscribeRM(cb: () => void) {
+  if (!hasMM()) return () => {};
   const m = window.matchMedia(RM);
   m.addEventListener("change", cb);
   return () => m.removeEventListener("change", cb);
@@ -14,7 +17,7 @@ function subscribeRM(cb: () => void) {
 export function useReducedMotion(): boolean {
   return useSyncExternalStore(
     subscribeRM,
-    () => window.matchMedia(RM).matches,
+    () => hasMM() && window.matchMedia(RM).matches,
     () => false,
   );
 }

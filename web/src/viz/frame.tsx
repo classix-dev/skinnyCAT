@@ -41,7 +41,7 @@ export function SceneFrame({
 }: {
   sceneRef: RefObject<HTMLElement | null>;
   tl: Timeline;
-  copy: SceneCopy;
+  copy: Pick<SceneCopy, "figure" | "steps">;
   /** Captions with real numbers filled in, defaults to the copy's. */
   steps?: string[];
   children: ReactNode;

@@ -349,14 +349,14 @@ try {
     const res = await page.request.get(new URL(f, APP).href);
     check(res.ok(), `/${f} is served (${res.status()})`);
   }
-  check(!/hypertree/i.test(await page.content()), "no hypertree on the page");
+  check(!/hypertree/i.test(await page.title()) && !/hypertree/i.test(await page.locator("header >> nth=0").innerText()), "no hypertree in the title or header (the explainer uses it as the technical term)");
   await page.waitForSelector(`${tid("selftest")}[data-state-result]`, { timeout: 60_000 });
   const selftestOk = (await page.getAttribute(tid("selftest"), "data-state-result")) === "ok";
   check(selftestOk, `self-tests: ${await page.textContent(tid("selftest-label"))}`);
   await page.click(tid("selftest"));
   const list = await page.textContent(tid("selftest-list"));
   check(/chain id61/.test(list) && /verifier code hash0x/.test(list) && /EthLib vectors, JS verifier3 vectors/.test(list), `self-test list: ${list.slice(0, 160)}…`);
-  await shots(page, "1-selftest", { scrollTo: "header" });
+  await shots(page, "1-selftest", { scrollTo: "header >> nth=0" });
   await page.keyboard.press("Escape");
   await shots(page, "1-start");
   await shots(page, "1b-how-it-works", { scrollTo: tid("how") });

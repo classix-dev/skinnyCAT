@@ -245,7 +245,10 @@ describe("skinnyCAT", () => {
     expect(screen.getByTestId("alice-avatar").dataset.awake).toBe("1");
     expect(screen.getByTestId("bob-avatar").dataset.awake).toBeUndefined();
     expect(screen.getByTestId("bob-napping").textContent).toBe("No key yet, so Bob is napping.");
-    for (const svg of document.querySelectorAll("svg")) expect(svg.closest('[aria-hidden="true"]')).toBeTruthy();
+    for (const svg of document.querySelectorAll("svg")) {
+      const labelled = svg.closest("[role=img][aria-label], figure[aria-labelledby], figure[aria-label], figure[aria-describedby]");
+      expect(svg.closest('[aria-hidden="true"]') || labelled, svg.outerHTML.slice(0, 120)).toBeTruthy();
+    }
   });
 
   test("no stage before signing starts, or when the message is refused before signing", () => {

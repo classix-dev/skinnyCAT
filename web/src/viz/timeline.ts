@@ -27,17 +27,26 @@ export interface Timeline {
 
 const EPS = 1e-3;
 
-/** `beats` are the start times of each step, the first one 0. */
-export function useTimeline(duration: number, beats: readonly number[], visible: boolean, reduced: boolean): Timeline {
+/**
+ * `beats` are the start times of each step, the first one 0. With `poster`, the server render and
+ * the first client render show the finished picture, for readers without JavaScript, and
+ * hydration rewinds to the start.
+ */
+export function useTimeline(duration: number, beats: readonly number[], visible: boolean, reduced: boolean, poster = false): Timeline {
   const { stillAt } = useVizConfig();
   const still = stillAt != null;
-  const [t, setT] = useState(() => (still ? stillAt * duration : 0));
+  const [t, setT] = useState(() => (still ? stillAt * duration : poster ? duration : 0));
   const [playing, setPlaying] = useState(false);
   const [interacted, setInteracted] = useState(false);
   const tRef = useRef(t);
   tRef.current = t;
   const started = useRef(false);
   const resume = useRef(false);
+
+  // A poster rewinds once hydrated. Reduced motion, below, puts it back on the last frame.
+  useEffect(() => {
+    if (poster && !still) setT(0);
+  }, []);
 
   // Reduced motion: open on the finished picture and never autoplay.
   useEffect(() => {
