@@ -47,9 +47,10 @@ sequenceDiagram
     V-->>L: valid
     L-->>R: pay the 0.001 ETC fee
 
-    Bob->>R: signed withdraw of 0.2 to his fresh address
+    Bob->>R: signed withdraw of 0.2 to his fresh address, fee 0.001
     R->>L: withdraw
     L->>V: verify
+    L-->>R: pay the 0.001 ETC fee
     L-->>Fresh: send 0.2 ETC
 ```
 
