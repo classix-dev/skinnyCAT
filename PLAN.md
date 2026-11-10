@@ -28,6 +28,8 @@ Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to 
 
 ### M1. Wallet Contracts
 
+Done 2026-11-10. 8 tests in [test/LeanSphincsWallet.t.sol](test/LeanSphincsWallet.t.sol) pass with signatures from the Python signer.
+
 - `LeanSphincsWallet` holds the 32-byte public key, a verifier address and a nonce. `execute(to, value, data, sig)` checks the signature over `keccak256(abi.encode(tag, chainid, wallet, nonce, to, value, keccak256(data)))`, bumps the nonce and makes the call. Anyone can submit it.
 - `LeanSphincsWalletFactory` deploys wallets as EIP-1167 clones with `CREATE2`, salted by the public key, and initializes them in the same call so nobody can front-run the key setup.
 - Tests sign with the Python reference signer over FFI. They cover a valid transfer, replay, wrong chain, wrong wallet, tampering, and calls from a third party.
@@ -35,13 +37,19 @@ Done 2026-11-10. Foundry with `evm_version = "shanghai"`, a Nix flake pinned to 
 
 ### M2. Signer
 
+Done 2026-11-10 in [signer](signer). 44 tests pass, about 3.5 s per signature in Node and about 1.2 s in a browser worker.
+
 A TypeScript leanSPHINCS signer, ported from the Python reference and checked byte for byte against EthLib's vectors and the KAT fixture. The CLI and the web app both use it. The Python signer stays as the cross-check.
 
 ### M3. First Transaction on Mordor
 
+[script/pq-send.sh](script/pq-send.sh) does it from the command line and works on a local Shanghai anvil. The deploy dry run puts the verifier at `0x14e305EF06959B2317AaB31e6cc8749d41FC8C04` and the factory at `0x3e770624D601F6F6e5D7258ad83AC84927181139`. Waiting on Mordor ETC for the deployer `0x0797c50015a94e79d7713fcFa9165f228E2bB5e8`. The faucet at faucet.etcmc-monitor.org took our claim on 2026-11-10 but hasn't paid any claim since 2026-08-08, and the GHOST faucet needs a captcha.
+
 Deploy the verifier and factory through the CREATE2 deployer so the addresses match on Mordor and mainnet. Create a wallet, fund it from a Mordor faucet, and send ETC out of it with a leanSPHINCS signature. Record addresses and transaction hashes in `docs/deployments.md`.
 
 ### M4. pq.classix.dev
+
+Built in [web](web), with a Playwright test of the whole flow against a local anvil. Not deployed yet. It goes live once M3 puts the contracts on Mordor.
 
 A static web app in Classix branding, modeled on the flow of the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop).
 
@@ -69,8 +77,8 @@ These are estimates from the Foundry measurement and EVM pricing. M1 replaces th
 |---|---|---|
 | deploy verifier (3.3 KB runtime) | about 760,000 | about 0.003 |
 | deploy factory and wallet implementation | about 600,000 | about 0.0024 |
-| create a wallet (clone and init) | about 100,000 | about 0.0004 |
-| transfer out of a wallet | 260,000 to 300,000 | about 0.0011 |
+| first send, wallet created in the same tx | 395,000 (measured on anvil) | about 0.0016 |
+| later sends | about 265,000 | about 0.0011 |
 
 A transfer breaks down like this.
 

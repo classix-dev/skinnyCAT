@@ -31,7 +31,7 @@ The [leanSphincs](https://github.com/leanEthereum/leanSphincs) competition run b
 
 ## Status
 
-As of 2026-11-10 the repo holds the Foundry scaffold, the vendored verifier and its tests. Next come the wallet contracts and a Mordor transaction, then pq.classix.dev and mainnet. Milestones, gas estimates and open questions are in [PLAN.md](PLAN.md).
+As of 2026-11-10 the wallet contracts, a TypeScript signer, a command-line send script and the pq.classix.dev app are built and tested on a local chain. Next is deploying to Mordor and making the first transaction there, then mainnet. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
 
 ## Building
 
