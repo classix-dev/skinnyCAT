@@ -1,6 +1,6 @@
 # Plan
 
-The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. istora asked on 2026-11-10 for this to run on mainnet in production, and on the same day decided to skip the Mordor rehearsal. The full flow is tested on a local chain with ETC's rules instead. The design is in [README.md](README.md).
+The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. istora asked on 2026-11-10 for this to run on mainnet in production, and on the same day decided to skip the Mordor rehearsal. The full flow is tested on a local chain with ETC's rules instead. The design is in [README.md](README.md). It's a demo project, built for fun, and the site says so.
 
 ## What ETC Supports Today
 

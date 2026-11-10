@@ -2,6 +2,8 @@
 
 The goal is the first quantum-secure transaction on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then we want anyone to be able to make their own through a web app at pq.classix.dev.
 
+This is a demo project, built for fun. It's unaudited research code, so don't put more ETC in it than you're happy to lose.
+
 ## The Approach
 
 ETC has no account abstraction and no [EIP-7702](https://eips.ethereum.org/EIPS/eip-7702). Core-Geth's classic config stops at Spiral, which is Shanghai without withdrawals, so there's no `MCOPY`, no transient storage and no type 2 transaction (see `params/config_classic.go` in Core-Geth). We checked what the chain runs today and designed for that.
