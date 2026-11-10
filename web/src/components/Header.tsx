@@ -3,6 +3,7 @@ import { Check, ChevronDown, ShieldCheck, ShieldX, Wallet, X } from "lucide-reac
 import { quickConnect, setNetwork, useApp } from "../store";
 import { short } from "../lib/format";
 import { Wordmark } from "./Brand";
+import { ByClassix } from "./ClassixWordmark";
 import { Button, Spinner, cx } from "./ui";
 
 export function Header() {
@@ -12,6 +13,7 @@ export function Header() {
         <a href="/" className="rounded-md" aria-label="Hypertree home">
           <Wordmark />
         </a>
+        <ByClassix className="hidden sm:inline-flex" />
         <div className="ml-auto flex items-center gap-2">
           <NetworkBadge />
           <SelfTestPill />
