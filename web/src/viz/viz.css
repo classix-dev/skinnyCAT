@@ -1,0 +1,32 @@
+/* Small pieces of motion the scenes share. The global reduced-motion rule in style.css shortens
+   these to nothing, and the scenes themselves open on their last frame in that case. */
+
+@keyframes sx-flash {
+  from {
+    color: #ffffff;
+    text-shadow: 0 0 10px var(--color-cyan);
+  }
+}
+.sx-flash {
+  animation: sx-flash 0.7s ease-out;
+}
+
+@keyframes sx-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+}
+.sx-pop {
+  animation: sx-pop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.sx-glow {
+  filter: drop-shadow(0 0 6px color-mix(in oklab, var(--color-cyan) 70%, transparent));
+}
+
+.sx-canvas {
+  image-rendering: pixelated;
+}
