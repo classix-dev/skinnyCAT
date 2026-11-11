@@ -7,6 +7,7 @@ const CREDITS: [string, string, string?][] = [
   [LINKS.ethlibCommit, "EthLib leanSPHINCS spec"],
   [LINKS.sphincsMinus, "SPHINCS-", "by Nicolas Consigny"],
   [LINKS.workshop, "Devcon_Workshop", "by Alessandro Baiocchi"],
+  [LINKS.playground, "SPHINCS Playground", "by Project Eleven"],
   [LINKS.rivaLabs, "Post-Quantum-AA-Infra", "by RivaLabs"],
   [LINKS.leanSphincs, "leanSphincs", "competition"],
 ];

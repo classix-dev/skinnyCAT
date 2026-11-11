@@ -19,6 +19,7 @@ export const LINKS = {
   eip8288: "https://eips.ethereum.org/EIPS/eip-8288",
   ecip1120: "https://github.com/orgs/ethereumclassic/discussions/541",
   workshop: "https://github.com/alessandrobaiocchi/Devcon_Workshop",
+  playground: "https://sphincs-playground.vercel.app",
   ethlibCommit: "https://github.com/ethereum/EthLib/commit/dce7a2de23a973d84eac38126a1527763cd3465d",
   ethlib: "https://github.com/ethereum/EthLib",
   sphincsArt: "https://sphincs.art",
