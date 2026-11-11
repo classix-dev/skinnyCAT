@@ -1,6 +1,6 @@
 # Frame Transactions Instead of Meta-Transactions
 
-Source copy for the section on skinnycat.classix.dev, and for the write-up. Everything about EIP-8141 here is from the [draft](https://eips.ethereum.org/EIPS/eip-8141) as of 2026-11-10.
+The long version of the frame transactions section on skinnycat.classix.dev, and the source for the write-up. Everything about EIP-8141 here is from the [draft](https://eips.ethereum.org/EIPS/eip-8141) as of 2026-11-10.
 
 ## What We Do Today
 

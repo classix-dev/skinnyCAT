@@ -1,6 +1,6 @@
 # skinnyCAT Brief
 
-From istora, 2026-11-10. skinnyCAT is a deliberately silly knock-off demo, and the site should be fun and jovial. The cryptography stays accurate, and the jokes stay out of the diagrams.
+From istora, 2026-11-10 and 2026-11-11. skinnyCAT is an educational demo, not a production app, with a silly name and a fun look. The cryptography stays accurate, and the jokes stay out of the diagrams.
 
 ## The Cat
 
@@ -8,7 +8,7 @@ Schrödinger's cat, the cat in a box. Our cat is skinny, so it slips out of the 
 
 - The mark is the skinny cat drawn in hash-tree strokes, its tail the lit Merkle path from leaf to root ([skinnycat-mark.svg](skinnycat-mark.svg)). It sits on or jumps out of a box.
 - At favicon size, the head only, with the cyan eyes.
-- Alice and Bob are cats. Bob is the skinny stray with no ETC. The browser wallet that relays Bob's signed note for a fee is the cat courier.
+- Alice and Bob are cats. Bob holds no ETC, and the browser wallet relays his signed notes for a fee.
 
 ## Where Cats Show Up
 
@@ -19,9 +19,6 @@ Schrödinger's cat, the cat in a box. Our cat is skinny, so it slips out of the 
 
 ## Copy
 
-Light and playful, still following the repo's writing rules. A few lines we like.
+As little text as possible (istora, 2026-11-11). The cats live in the pictures and animations, not in the words. No eyebrow labels, taglines, asides or closing one-liners. The intro says plainly what skinnyCAT does, and the page says it's an educational demo, not a production app. Longer explanations belong in the README and [docs](..), not on the page.
 
-- One key signs up to 2^30 times, more lives than any cat needs.
-- Until a quantum computer looks, an ECDSA key is fine and broken at the same time. A leanSPHINCS key is just fine.
-
-Don't claim Schrödinger's cat has anything to do with the cryptography. It's a quantum joke, and the page says what actually protects the funds (hashes, not superposition).
+Don't claim Schrödinger's cat has anything to do with the cryptography. Hashes protect the funds, not superposition.

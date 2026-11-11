@@ -53,7 +53,7 @@ export function PlayerControls({ s, dispatch, last, prefix }: { s: Player; dispa
           size="sm"
           variant="secondary"
           aria-pressed={s.fast}
-          aria-label="Double speed"
+          aria-label="2× speed"
           title="Double speed"
           data-testid={`${prefix}-speed`}
           onClick={go("speed")}

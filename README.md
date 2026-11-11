@@ -1,6 +1,6 @@
 # pq-sig
 
-The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at skinnycat.classix.dev where anyone can make their own.
+The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, an educational demo at [skinnycat.classix.dev](https://skinnycat.classix.dev) where anyone can make their own.
 
 This is an educational demo, not a production app. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
@@ -113,7 +113,7 @@ Without a fork, ETC can't do much. One signer can sign a Merkle root over many p
 
 ## Status
 
-As of 2026-11-10 the contracts, a TypeScript signer, a command-line send script and the skinnycat.classix.dev app are built and tested on a local chain with ETC's rules. Next is the mainnet deploy and the first transaction. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
+As of 2026-11-11 the contracts, a TypeScript signer and a command-line send script are built and tested on a local chain with ETC's rules. The skinnyCAT site is live at [skinnycat.classix.dev](https://skinnycat.classix.dev). Until the contracts are on mainnet it makes keys and signs with Sign Only, and sending is off. Next is the mainnet deploy and the first transaction. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
 
 ## Building
 
@@ -125,6 +125,17 @@ cd skinnyCAT
 nix develop
 forge build
 forge test
+```
+
+The site is in [web](web).
+
+```sh
+cd web
+npm install
+npm run dev        # the site on http://localhost:5173
+npm test           # unit tests
+npm run test:e2e   # the whole demo against a local anvil chain, in Playwright
+npm run build      # pre-rendered static site in web/dist
 ```
 
 ## Credits

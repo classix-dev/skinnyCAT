@@ -1,6 +1,6 @@
 # Aggregation
 
-Source copy for the aggregation section on skinnycat.classix.dev, the README and the skinnyCAT post. EIP details are from the drafts as of 2026-11-10.
+The long version of the aggregation section on skinnycat.classix.dev, and the source for the README and the skinnyCAT post. EIP details are from the drafts as of 2026-11-10.
 
 A leanSPHINCS signature is 7,740 bytes, about 119 times an ECDSA signature. On ETC today each one costs about 123,000 gas of calldata and 86,000 gas to verify. Aggregation is how Ethereum plans to make that cost go away, and none of it works on ETC yet.
 
@@ -44,5 +44,3 @@ These work on ETC today, inside contracts, and each has a catch.
 - **Relay many in one transaction.** A relayer can submit several signed scETC transfers in one call. That saves the 21,000 base cost per transaction, and each signature still costs its full calldata and verification.
 - **Prove the batch with a STARK on chain.** A contract could verify one STARK that proves many leanSPHINCS signatures. EIP-8288 puts such proofs at 128 KB to 512 KB, which is 2 to 8 million gas of calldata alone against ETC's 8,000,000 gas block limit, so it doesn't fit.
 - **Wrap it in a SNARK.** A Groth16 proof on ETC's BN254 precompiles verifies for a few hundred thousand gas. It rests on elliptic-curve pairings, which a quantum computer breaks, so the result is no longer quantum-secure. We rule it out.
-
-So for now skinnyCAT pays full price per signature, and we say so.

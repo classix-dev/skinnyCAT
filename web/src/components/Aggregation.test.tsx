@@ -185,7 +185,7 @@ describe("Aggregation", () => {
     const names = within(screen.getByRole("group", { name: "Diagram player" }))
       .getAllByRole("button")
       .map((b) => b.getAttribute("aria-label"));
-    expect(names).toEqual(["Previous step", "Play", "Next step", "Replay from step 1", "Double speed"]);
+    expect(names).toEqual(["Previous step", "Play", "Next step", "Replay from step 1", "2× speed"]);
     const next = () => fireEvent.click(screen.getByRole("button", { name: "Next step" }));
     next();
     next();

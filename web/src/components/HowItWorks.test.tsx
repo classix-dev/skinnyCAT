@@ -212,7 +212,7 @@ describe("How It Works", () => {
     const names = within(player)
       .getAllByRole("button")
       .map((b) => b.getAttribute("aria-label"));
-    expect(names).toEqual(["Previous step", "Play", "Next step", "Replay from step 1", "Double speed"]);
+    expect(names).toEqual(["Previous step", "Play", "Next step", "Replay from step 1", "2× speed"]);
 
     fireEvent.click(screen.getByRole("button", { name: "Next step" }));
     expect(caption().textContent).toContain(STEPS[0].caption);

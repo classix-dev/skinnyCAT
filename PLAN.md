@@ -1,6 +1,6 @@
 # Plan
 
-The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at skinnycat.classix.dev where anyone can make one. It's a proof of concept and an experiment, built for fun and not meant for real use, and the site says so. The design is in [README.md](README.md).
+The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at skinnycat.classix.dev where anyone can make one. It's an educational demo, not a production app, and the site says so. The design is in [README.md](README.md).
 
 ## What ETC Supports Today
 
@@ -49,16 +49,24 @@ It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD
 
 ### M5. skinnycat.classix.dev
 
-Built in [web](web) and being redesigned with its own blue identity in React and Tailwind, a "by Classix" mark as on etchd and Triforce, and a title that doesn't call it a wallet. It says up front that it's a proof of concept and an experiment, not meant for real use.
+Live since 2026-11-11, built in [web](web) with React, Tailwind and Vite, pre-rendered at build time and then hydrated. It has its own blue look, a "by Classix" mark as on etchd and Triforce, and a title that doesn't call it a wallet. The intro says what skinnyCAT does and that it's an educational demo, not a production app. We cut the page's text to a minimum on 2026-11-11, and the long explanations live in [docs](docs).
+
+Until scETC is on mainnet the site shows a "Not on mainnet yet" state. Keys and Sign Only work, balances read 0 and sending is off. Once the contracts have code it works with no rebuild.
 
 The flow follows the [Devcon workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop), with Alice and Bob on one page.
 
-1. Make two leanSPHINCS keys in the browser, Alice and Bob.
+1. Make two leanSPHINCS keys in the browser, Alice and Bob. Each backs up as a 24-word BIP-39 phrase that encodes its 32-byte seed. We ruled out deriving the seed from an ECDSA wallet signature, because a quantum attacker who recovers the ECDSA key could recompute the seed.
 2. Alice deposits ETC from a browser wallet and pays Bob in one transaction, with a message in a text box.
 3. Bob, who holds no ETC, signs a payment back, and the browser wallet relays it for Bob's fee.
 4. Each step shows the signature, the local and on-chain checks, the receipt and a Blockscout link.
 
-On load the page checks the deployed verifier's code hash and runs EthLib vectors through its own verifier. It's a static site with no backend, served by a Cloudflare Worker with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev. It also explains what's quantum-secure and what isn't, and links [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141).
+On load the page checks the deployed verifier's code hash and runs EthLib vectors through its own verifier. It's a static site with no backend, served by the Cloudflare Worker `skinnycat` with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev. Below the demo come How It Works, a leanSPHINCS explainer in a Like I'm Five and a detailed version, frame transactions ([EIP-8141](https://eips.ethereum.org/EIPS/eip-8141)), aggregation ([EIP-8288](https://eips.ethereum.org/EIPS/eip-8288)) and the current limitations.
+
+Testing, as of 2026-11-11.
+
+- 127 Vitest unit tests with Testing Library and axe.
+- An end-to-end run (`npm run test:e2e`) against anvil as chain 61 on Shanghai rules. It deploys with the real script, drives the whole Alice and Bob story in Playwright, fails on any console error or hydration warning, and checks the layout at six widths from 320 to 1440 px. From 768 px up Alice and Bob sit side by side.
+- Lighthouse on the live site scores 100 for accessibility, best practices and SEO, 100 for desktop performance and 90 to 92 for mobile performance.
 
 ### M6. Write-Up
 
@@ -80,7 +88,6 @@ Most of a send is the 7,740-byte signature, about 124,000 gas of calldata, and i
 ## Open Questions
 
 - Who funds the mainnet deployer, and from which key.
-- How users back up keys. EthLib's secret key is a 32-byte seed. A BIP-39 phrase that encodes it is the likely choice. We rule out deriving the seed from an ECDSA wallet signature, because a quantum attacker who recovers the ECDSA key could recompute the seed.
 - Whether we verify contract source on Blockscout. That publishes the code, so we ask istora first. This repo stays private until istora says otherwise.
 - leanSPHINCS isn't final. A new version means a new verifier and a new scETC, and we don't plan upgradeable contracts.
 - Whether "first" holds. The claim is the first quantum-secure signature on ETC, not the first quantum-secure transaction, since hash-preimage locks exist. We haven't found an earlier post-quantum signature verified on ETC, but we haven't searched the chain. The memo wording needs istora's confirmation before the mainnet transaction.
