@@ -1,4 +1,4 @@
-import { SitCat } from "./Cats";
+import { CatInBox } from "./Cats";
 import { ByClassix } from "./ClassixWordmark";
 import { GitHubMark, LINKS } from "./ext";
 
@@ -41,14 +41,15 @@ export function Footer() {
             classix-dev/skinnyCAT
           </a>
           <ByClassix className="text-xs" />
-          <p className="flex items-end gap-2 text-subtle" data-testid="no-cats-harmed">
-            <svg viewBox="-9 -24 18 25" className="h-5 w-4 shrink-0" aria-hidden="true" focusable="false">
-              <SitCat />
-            </svg>
-            No cats were put into superposition during the making of this website.
-          </p>
         </div>
       </div>
+      <p
+        className="flex items-center justify-center gap-2 border-t border-white/[0.04] px-4 py-5 text-center text-xs text-subtle"
+        data-testid="no-cats-harmed"
+      >
+        <CatInBox className="h-8 w-10 shrink-0" />
+        No cats were put into superposition during the making of this website.
+      </p>
     </footer>
   );
 }

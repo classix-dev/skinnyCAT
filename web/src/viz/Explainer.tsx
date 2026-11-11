@@ -145,7 +145,7 @@ export function Explainer({ className, config }: { className?: string; config?: 
 
   return (
     <VizConfigContext value={config ?? {}}>
-      <div ref={root} className={className} data-testid="explainer" data-mode={mode}>
+      <div ref={root} id="explainer" className={`scroll-mt-20 ${className ?? ""}`} data-testid="explainer" data-mode={mode}>
         <div className="mb-8 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mb-10">
           <ModeToggle mode={mode} onChange={choose} />
         </div>

@@ -103,6 +103,19 @@ export function EmptyBox({ className }: { className?: string }) {
   );
 }
 
+/** The cat sitting in its box, head and ears over the front, flaps open. For the footer. */
+export function CatInBox({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 40 32" className={className} aria-hidden="true" focusable="false" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <g transform="translate(20 21) scale(0.82)">
+        <SitCat />
+      </g>
+      <path d="M9 17H31V30H9Z" fill="var(--color-ink-900)" stroke={BLUE} strokeWidth="1.8" />
+      <path d="M9 17 4 12M31 17 36 12.5" stroke={BLUE} strokeWidth="1.8" />
+    </svg>
+  );
+}
+
 /** A startled cat for errors. Ears back, eyes wide, perfectly fine. */
 export function OopsCat({ className }: { className?: string }) {
   return (

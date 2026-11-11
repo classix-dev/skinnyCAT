@@ -1,5 +1,5 @@
 {
-  description = "pq-sig: a leanSPHINCS-controlled wallet on Ethereum Classic";
+  description = "skinnyCAT: quantum-secure payments on Ethereum Classic with leanSPHINCS, an educational demo";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/4fe25e12eb9f4c744966dd3de5a05246cf098601";
 

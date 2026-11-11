@@ -10,8 +10,10 @@ import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
 import { HowItWorks } from "./components/HowItWorks";
 import { HydrateNear } from "./components/HydrateNear";
+import { KeyDegradation } from "./components/KeyDegradation";
 import { KeysStep } from "./components/KeysStep";
 import { RelayerStep } from "./components/RelayerStep";
+import { Toc } from "./components/Toc";
 import { start, useApp } from "./store";
 import { LEDGER_SYMBOL } from "./generated/contracts";
 import { Explainer } from "./viz";
@@ -55,6 +57,7 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
         <main className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14 lg:pt-20">
           <div className="flex flex-col gap-10 sm:gap-12">
             <Hero />
+            <Toc />
             <div id="demo" className="scroll-mt-20 grid gap-4 md:grid-cols-2" data-testid="steps" data-live={live ? "1" : undefined}>
               <h2 className="sr-only">The Demo</h2>
               {deployed === false && (
@@ -75,6 +78,7 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
           <div className="mt-24 space-y-24">
             <LateHowItWorks />
             <Explainer />
+            <KeyDegradation />
             <FrameTransactions />
             <LateAggregation />
             <About />

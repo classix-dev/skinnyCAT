@@ -1,8 +1,8 @@
-# pq-sig
+# skinnyCAT
 
-The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, an educational demo at [skinnycat.classix.dev](https://skinnycat.classix.dev) where anyone can make their own.
+Quantum-secure payments on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Make a key in your browser at [skinnycat.classix.dev](https://skinnycat.classix.dev), deposit ETC to it, and only that key can spend it. We're using it to make the first quantum-secure signature on Ethereum Classic.
 
-This is an educational demo, not a production app. Nothing here is audited, so don't put in more ETC than you're happy to lose.
+skinnyCAT is an educational demo, not a production app. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
 Quantum-secure here means a quantum computer can't spend the funds. The gas is still paid by an ordinary account, which only risks its own gas money (see [Current Limitations](#current-limitations)).
 
@@ -87,6 +87,16 @@ We moved to it for four reasons.
 
 The cost is that no EVM verifier existed for it, so we wrote our own, [src/LeanSphincsVerifier.sol](src/LeanSphincsVerifier.sol), following the structure of the SPHINCS- verifier. It and the TypeScript signer in [signer](signer) reproduce every EthLib test vector byte for byte (vectors in [test/fixtures/ethlib-sphincs](test/fixtures/ethlib-sphincs), CC0). [docs/leanSphincs-fips-layout.md](docs/leanSphincs-fips-layout.md) is a reviewer's summary of the layout. That makes the verifier our code, not a vendored one, and it's unaudited. The spec has changed twice in a week and the [leanSphincs](https://github.com/leanEthereum/leanSphincs) competition hasn't opened yet, so we pin the EthLib commit everywhere and expect to redeploy when it moves.
 
+## Key Degradation
+
+A leanSPHINCS key wears out with use. Each signature opens one secret leaf in each of the 24 trees of a FORS instance, and since the key keeps no state, the message's digest picks which of the 2^26 instances signs. Instances get picked again, each reuse opens more leaves, and a forger needs an open leaf in all 24 trees. EthLib's [spec](https://github.com/ethereum/EthLib/blob/dce7a2de23a973d84eac38126a1527763cd3465d/EthLib/Cryptography/Sphincs/README.md) puts it plainly.
+
+> Never sign more than `2^30` messages with one key.
+> The digest picks a FORS instance at random, so instances are reused, and each signature from an instance weakens it.
+> Nothing in EthLib counts signatures, so the caller must.
+
+Its proof gives 127 bits up to 1,182,000,000 signatures. Standard SLH-DSA is sized for 2^64 signatures per key. leanSPHINCS takes the smaller budget, and that's what lets its signature be both small and cheap to check. Past the budget security falls fast. A simple model of FORS reuse, the one the site plots, gives about 130 bits at 2^30, about 92 at 2^32 and about 32 at 2^35. So don't use one key millions of times. Make a new key and move the funds.
+
 ## Current Limitations
 
 The funds are quantum-secure, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move scETC, change the call, or replay the signature, because the contract checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
@@ -100,6 +110,7 @@ The account's own code checks the signature in a VERIFY frame and approves the g
 Other limits today:
 
 - Nothing here is audited.
+- A key is good for about a billion signatures (see [Key Degradation](#key-degradation)), and nothing in the app counts them.
 - Each signature is 7,740 bytes, so a send costs about 290,000 gas, around 14 times a plain transfer.
 - All scETC sits in one contract, so a bug there affects every holder.
 - leanSPHINCS isn't final. A new version means a new verifier and a new ledger.

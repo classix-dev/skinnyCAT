@@ -60,11 +60,11 @@ The flow follows the [Devcon workshop](https://github.com/alessandrobaiocchi/Dev
 3. Bob, who holds no ETC, signs a payment back, and the browser wallet relays it for Bob's fee.
 4. Each step shows the signature, the local and on-chain checks, the receipt and a Blockscout link.
 
-On load the page checks the deployed verifier's code hash and runs EthLib vectors through its own verifier. It's a static site with no backend, served by the Cloudflare Worker `skinnycat` with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev. Below the demo come How It Works, a leanSPHINCS explainer in a Like I'm Five and a detailed version, frame transactions ([EIP-8141](https://eips.ethereum.org/EIPS/eip-8141)), aggregation ([EIP-8288](https://eips.ethereum.org/EIPS/eip-8288)) and the current limitations.
+On load the page checks the deployed verifier's code hash and runs EthLib vectors through its own verifier. It's a static site with no backend, served by the Cloudflare Worker `skinnycat` with static assets on the classix.dev zone, and it reads the chain through rpc.classix.dev. A table of contents sits under the hero. Below the demo come How It Works, a leanSPHINCS explainer in a Like I'm Five and a detailed version, key degradation with a slider from 2^16 to 2^40 signatures, frame transactions ([EIP-8141](https://eips.ethereum.org/EIPS/eip-8141)), aggregation ([EIP-8288](https://eips.ethereum.org/EIPS/eip-8288)) and the current limitations.
 
 Testing, as of 2026-11-11.
 
-- 127 Vitest unit tests with Testing Library and axe.
+- 131 Vitest unit tests with Testing Library and axe.
 - An end-to-end run (`npm run test:e2e`) against anvil as chain 61 on Shanghai rules. It deploys with the real script, drives the whole Alice and Bob story in Playwright, fails on any console error or hydration warning, and checks the layout at six widths from 320 to 1440 px. From 768 px up Alice and Bob sit side by side.
 - Lighthouse on the live site scores 100 for accessibility, best practices and SEO, 100 for desktop performance and 90 to 92 for mobile performance.
 
