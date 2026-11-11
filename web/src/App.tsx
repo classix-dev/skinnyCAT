@@ -52,9 +52,9 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
         </a>
         <Header />
         <main className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14 lg:pt-20">
-          <div className="flex flex-col gap-10 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:items-start lg:gap-x-14">
+          <div className="flex flex-col gap-10 sm:gap-12">
             <Hero />
-            <div id="demo" className="scroll-mt-20 space-y-4" data-testid="steps" data-live={live ? "1" : undefined}>
+            <div id="demo" className="scroll-mt-20 grid gap-4 md:grid-cols-2" data-testid="steps" data-live={live ? "1" : undefined}>
               <h2 className="sr-only">The Demo</h2>
               <KeysStep />
               <RelayerStep />

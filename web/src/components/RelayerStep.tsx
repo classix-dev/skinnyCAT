@@ -9,7 +9,7 @@ import { addressUrl } from "../config";
 export function RelayerStep() {
   const s = useApp();
   return (
-    <StepCard id="step-relayer" n={2} title="The Cat Courier" done={!!s.conn}>
+    <StepCard id="step-relayer" n={2} title="The Cat Courier" done={!!s.conn} wide>
       <div className="flex items-start gap-3">
         <CourierCat className="mt-0.5 h-8 w-10 shrink-0" />
         <p className="text-[13px] leading-relaxed text-muted">

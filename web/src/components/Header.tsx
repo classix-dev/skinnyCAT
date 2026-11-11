@@ -13,7 +13,7 @@ export function Header() {
         <a href="/" className="rounded-md" aria-label={`${APP_NAME} home`}>
           <Wordmark />
         </a>
-        <ByClassix />
+        <ByClassix className="max-[359px]:hidden" />
         <div className="ml-auto flex items-center gap-2">
           <span
             className="hidden h-7 items-center gap-1.5 rounded-full bg-white/[0.04] px-2.5 text-xs font-medium text-muted ring-1 ring-ink-600 ring-inset md:inline-flex"

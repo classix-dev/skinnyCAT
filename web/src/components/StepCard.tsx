@@ -9,6 +9,7 @@ export function StepCard({
   done,
   locked,
   aside,
+  wide,
   children,
 }: {
   id: string;
@@ -17,6 +18,8 @@ export function StepCard({
   done?: boolean;
   locked?: boolean;
   aside?: ReactNode;
+  /** Span both columns of the demo grid on tablet and wider. */
+  wide?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -26,6 +29,7 @@ export function StepCard({
       className={cx(
         "relative rounded-2xl bg-ink-900/80 ring-1 ring-inset ring-white/[0.07] shadow-[0_1px_0_0_rgb(255_255_255/0.04)_inset] transition-opacity",
         locked && "opacity-60",
+        wide && "md:col-span-2",
       )}
     >
       <div className="flex items-center gap-3 px-4 pt-4 sm:px-5 sm:pt-5">

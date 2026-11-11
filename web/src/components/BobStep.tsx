@@ -87,7 +87,7 @@ export function BobStep() {
             />
           </Field>
         )}
-        <div className="flex flex-col gap-3 min-[420px]:flex-row">
+        <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-end">
           <Field label="Amount" suffix={f.kind === "transfer" ? LEDGER_SYMBOL : "ETC"}>
             <input
               data-testid="bob-amount"

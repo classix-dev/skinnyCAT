@@ -14,6 +14,7 @@ export function KeysStep() {
   return (
     <StepCard
       id="step-keys"
+      wide
       n={1}
       title="Two Cats, Two Keys"
       done={both}
@@ -31,7 +32,7 @@ export function KeysStep() {
         Each key is made in this browser and lives only here. Its {LEDGER_SYMBOL} account is a hash of the public key, so no
         ECDSA key controls it. One key signs up to 2<sup>30</sup> times, more lives than any cat needs.
       </p>
-      <div className="divide-y divide-white/[0.06] rounded-xl bg-ink-950/50 ring-1 ring-ink-700 ring-inset">
+      <div className="divide-y divide-white/[0.06] rounded-xl bg-ink-950/50 ring-1 ring-ink-700 ring-inset md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
         <KeyPanel who="alice" />
         <KeyPanel who="bob" />
       </div>
@@ -195,8 +196,8 @@ function HaveKey({ who }: { who: Who }) {
           <span className="ml-auto text-xs text-subtle">24 words</span>
           <ChevronRight className="size-3.5 text-subtle transition-transform group-open:rotate-90" aria-hidden />
         </summary>
-        <div className="space-y-3 px-3 pb-3">
-          <ol className="grid grid-cols-2 gap-1.5 min-[420px]:grid-cols-3 sm:grid-cols-4" data-testid={`${who}-words`}>
+        <div className="@container space-y-3 px-3 pb-3">
+          <ol className="grid grid-cols-2 gap-1.5 @[20rem]:grid-cols-3 @[28rem]:grid-cols-4" data-testid={`${who}-words`}>
             {words.map((w, i) => (
               <li key={i} className="flex items-baseline gap-1.5 rounded-md bg-ink-850 px-2 py-1 ring-1 ring-ink-700 ring-inset">
                 <span className="mono w-4 text-right text-[10px] text-subtle" aria-hidden>

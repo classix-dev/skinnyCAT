@@ -2,7 +2,8 @@
 // story: two keys, Alice deposits and pays Bob in one transaction with the memo, Bob pays back
 // through the browser wallet as relayer, Bob withdraws to a fresh address, Sign Only, the error
 // paths and a reload. Fails on any console error or page error, hydration warnings included.
-// Takes desktop (1440) and mobile (390) screenshots into web/screenshots/.
+// Checks the layout at six widths from 320 to 1440 and takes desktop (1440), tablet (834) and
+// mobile (390) screenshots into web/screenshots/.
 //
 // Run through e2e/run.sh, which starts anvil, deploys and serves the app.
 
@@ -119,13 +120,61 @@ async function newPage(browser, viewport = DESKTOP) {
   return { ctx, page };
 }
 
-/** Full-page screenshots of the current state at desktop and mobile width. */
+/** Widths the layout is checked at on every screenshot: small phone, phone, tablet portrait, tablet, laptop, desktop. */
+const LAYOUT_WIDTHS = [320, 390, 768, 834, 1024, 1440];
+const TABLET = { width: 834, height: 1112 };
+
+/**
+ * Layout checks at the current width. No sideways scrolling, nothing in a step card spills out of it,
+ * no phrase word is cut off, and from 768px up Alice and Bob sit side by side (their keys and their
+ * steps), with one column below that.
+ */
+async function layout(page, name) {
+  const r = await page.evaluate(() => {
+    const W = document.documentElement.clientWidth;
+    const clipped = (el) => {
+      for (let a = el.parentElement; a; a = a.parentElement) if (getComputedStyle(a).overflowX !== "visible") return true;
+      return false;
+    };
+    const spill = [];
+    for (const card of document.querySelectorAll("#demo > section")) {
+      const c = card.getBoundingClientRect();
+      for (const el of card.querySelectorAll("*")) {
+        const b = el.getBoundingClientRect();
+        if (b.width && !el.closest(".sr-only") && !clipped(el) && (b.right > c.right + 1 || b.left < c.left - 1)) spill.push(`${card.id} ${el.tagName}[${el.getAttribute("data-testid") ?? ""}]`);
+      }
+    }
+    const cutWords = [...document.querySelectorAll("[data-word]")].filter((w) => w.getBoundingClientRect().right > w.parentElement.getBoundingClientRect().right + 0.5).map((w) => w.textContent);
+    const box = (s) => {
+      const e = document.querySelector(s);
+      if (!e) return null;
+      const b = e.getBoundingClientRect();
+      return { top: Math.round(b.top), left: Math.round(b.left), right: Math.round(b.right) };
+    };
+    return { W, sw: document.documentElement.scrollWidth, spill: [...new Set(spill)].slice(0, 5), cutWords, steps: [box("#step-alice"), box("#step-bob")], keys: [box('[data-testid="alice-key"]'), box('[data-testid="bob-key"]')] };
+  });
+  const at = `${name} at ${r.W}`;
+  if (r.sw > r.W) check(false, `${at}: page is ${r.sw}px wide`);
+  if (r.spill.length) check(false, `${at}: spills out of its card: ${r.spill.join(", ")}`);
+  if (r.cutWords.length) check(false, `${at}: phrase words cut off: ${r.cutWords.join(" ")}`);
+  for (const [what, [a, b]] of [["steps", r.steps], ["keys", r.keys]]) {
+    if (!a || !b) continue;
+    const side = a.top === b.top && a.right <= b.left;
+    const stacked = a.left === b.left && a.top < b.top;
+    if (r.W >= 768 ? !side : !stacked) check(false, `${at}: Alice and Bob's ${what} should be ${r.W >= 768 ? "side by side" : "stacked"}`);
+  }
+}
+
+/** Layout checks across LAYOUT_WIDTHS, then screenshots at desktop, tablet and mobile width. */
 async function shots(page, name, { scrollTo } = {}) {
-  for (const [tag, vp] of [["desktop", DESKTOP], ["mobile", MOBILE]]) {
+  for (const width of LAYOUT_WIDTHS) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.waitForTimeout(100);
+    await layout(page, name);
+  }
+  for (const [tag, vp] of [["desktop", DESKTOP], ["tablet", TABLET], ["mobile", MOBILE]]) {
     await page.setViewportSize(vp);
     await page.waitForTimeout(150);
-    const sw = await page.evaluate(() => document.documentElement.scrollWidth);
-    if (sw > vp.width) check(false, `${name} at ${vp.width}: page is ${sw}px wide`);
     if (scrollTo) {
       await page.locator(scrollTo).scrollIntoViewIfNeeded();
       await page.screenshot({ path: `${SHOTS}${tag}-${name}.png` });

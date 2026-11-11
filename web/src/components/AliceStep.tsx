@@ -28,7 +28,7 @@ export function AliceStep() {
           void act("alice", false);
         }}
       >
-        <div className="flex flex-col gap-3 min-[420px]:flex-row">
+        <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-end">
           <Field label="Deposit from the browser wallet" suffix="ETC">
             <input
               data-testid="alice-deposit"
@@ -54,7 +54,7 @@ export function AliceStep() {
           <span className="mb-1.5 block text-xs font-medium text-muted">Message, signed and emitted on chain</span>
           <textarea
             data-testid="alice-memo"
-            rows={2}
+            rows={3}
             maxLength={280}
             className={cx(inputClass, "h-auto resize-none py-2 leading-relaxed")}
             value={f.memo}
