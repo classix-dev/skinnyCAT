@@ -19,10 +19,20 @@ export function FrameTransactions() {
       <h2 id="frames-title" className="text-2xl font-semibold tracking-[-0.03em] text-fg sm:text-3xl">
         Frame Transactions Instead of Meta-Transactions
       </h2>
-      <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
-        On ETC only an ECDSA account can pay gas, so {LEDGER_SYMBOL} uses a relayer. Ethereum's draft fix is the frame
-        transaction, <A href={LINKS.eip8141}>EIP-8141</A>.
-      </p>
+      <div className="mt-2 max-w-2xl space-y-3 text-[15px] leading-relaxed text-muted" data-testid="frames-intro">
+        <p>
+          A meta-transaction is a signed message that someone else submits. Bob signs a {LEDGER_SYMBOL} transfer with his
+          leanSPHINCS key, and a relayer wraps it in an ordinary transaction and pays the gas.
+        </p>
+        <p>
+          We use one because on ETC only an ECDSA account can send a transaction and pay for it. So it needs a relayer, an
+          ECDSA key in the path, and a wrapped token.
+        </p>
+        <p>
+          A frame transaction, <A href={LINKS.eip8141}>EIP-8141</A>, drops all three. Bob's own account checks his
+          leanSPHINCS signature and pays its own gas, in plain ETC.
+        </p>
+      </div>
 
       <FrameExplainer />
       <p className="mt-3 max-w-2xl text-[13px] leading-relaxed text-muted">

@@ -38,6 +38,7 @@ for (const s of [
   "Five steps, shown here at the end.",
   "1 proof",
   "What ETC Can Do",
+  "A meta-transaction is a signed message that someone else submits.",
   "Key Degradation</h2>",
   "Never sign more than",
   "aria-label=\"On this page\"",
