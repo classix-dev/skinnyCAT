@@ -1,6 +1,6 @@
 # Aggregation
 
-Source copy for the aggregation section on pq.classix.dev, the README and the skinnyCAT post. EIP details are from the drafts as of 2026-11-10.
+Source copy for the aggregation section on skinnycat.classix.dev, the README and the skinnyCAT post. EIP details are from the drafts as of 2026-11-10.
 
 A leanSPHINCS signature is 7,740 bytes, about 119 times an ECDSA signature. On ETC today each one costs about 123,000 gas of calldata and 86,000 gas to verify. Aggregation is how Ethereum plans to make that cost go away, and none of it works on ETC yet.
 

@@ -1,6 +1,6 @@
 # Plan
 
-The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at pq.classix.dev where anyone can make one. It's a proof of concept and an experiment, built for fun and not meant for real use, and the site says so. The design is in [README.md](README.md).
+The target is a leanSPHINCS-authorized transaction on ETC mainnet, then a public web app at skinnycat.classix.dev where anyone can make one. It's a proof of concept and an experiment, built for fun and not meant for real use, and the site says so. The design is in [README.md](README.md).
 
 ## What ETC Supports Today
 
@@ -47,7 +47,7 @@ Deploy the verifier, scETC and the wallet factory through the CREATE2 deployer. 
 
 It's waiting on about 0.01 ETC for the deployer `0x1D9B41938e972EAc20c35703571aD607Be0D6dbD`. At 1 gwei the deploys and the demo come to about 0.004 ETC. The etchd signer can't fund it, since its policy only signs zero-value calls to the anchor contract.
 
-### M5. pq.classix.dev
+### M5. skinnycat.classix.dev
 
 Built in [web](web) and being redesigned with its own blue identity in React and Tailwind, a "by Classix" mark as on etchd and Triforce, and a title that doesn't call it a wallet. It says up front that it's a proof of concept and an experiment, not meant for real use.
 

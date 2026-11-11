@@ -1,6 +1,6 @@
 # pq-sig
 
-The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at pq.classix.dev where anyone can make their own.
+The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at skinnycat.classix.dev where anyone can make their own.
 
 This is a proof of concept and an experiment, built for fun. It isn't meant for real use. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
@@ -113,15 +113,15 @@ Without a fork, ETC can't do much. One signer can sign a Merkle root over many p
 
 ## Status
 
-As of 2026-11-10 the contracts, a TypeScript signer, a command-line send script and the pq.classix.dev app are built and tested on a local chain with ETC's rules. Next is the mainnet deploy and the first transaction. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
+As of 2026-11-10 the contracts, a TypeScript signer, a command-line send script and the skinnycat.classix.dev app are built and tested on a local chain with ETC's rules. Next is the mainnet deploy and the first transaction. Milestones, gas figures and open questions are in [PLAN.md](PLAN.md).
 
 ## Building
 
 Tools come from the Nix flake (Foundry, solc, Node).
 
 ```sh
-git clone --recurse-submodules git@github.com:classix-dev/pq-sig.git
-cd pq-sig
+git clone --recurse-submodules git@github.com:classix-dev/skinnyCAT.git
+cd skinnyCAT
 nix develop
 forge build
 forge test
@@ -134,6 +134,6 @@ This builds on other people's work.
 - [sphincs.art](https://sphincs.art) by Tom Wambsgans, the leanSPHINCS design. The spec note and the Lean 4 security proofs are in [TomWambsgans/sphincs.art](https://github.com/TomWambsgans/sphincs.art).
 - [EthLib](https://github.com/ethereum/EthLib), whose Lean module is the normative leanSPHINCS spec we follow, and whose test vectors we check against.
 - [SPHINCS-](https://github.com/nconsigny/SPHINCS-) by Nicolas Consigny (MIT). Our verifier follows the structure of its leanSPHINCS verifier, and its [write-up on ethresear.ch](https://ethresear.ch/t/sphincs-minus-efficient-stateless-post-quantum-signature-verification-on-the-evm/25165) covers the EVM side.
-- [Devcon_Workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop) by Alessandro Baiocchi, the Devcon 8 workshop that sends a leanSPHINCS-signed transaction on the Daisugi testnet. pq.classix.dev follows its flow. Its verifier is `SphincsVerifier_v2` from [RivaLabs-Core/Post-Quantum-AA-Infra](https://github.com/RivaLabs-Core/Post-Quantum-AA-Infra/blob/6078fd9306be250dfd12d3b9e57c56688b856a85/src/Verifiers/SphincsVerifier_v2.sol) at commit `6078fd93`.
+- [Devcon_Workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop) by Alessandro Baiocchi, the Devcon 8 workshop that sends a leanSPHINCS-signed transaction on the Daisugi testnet. skinnycat.classix.dev follows its flow. Its verifier is `SphincsVerifier_v2` from [RivaLabs-Core/Post-Quantum-AA-Infra](https://github.com/RivaLabs-Core/Post-Quantum-AA-Infra/blob/6078fd9306be250dfd12d3b9e57c56688b856a85/src/Verifiers/SphincsVerifier_v2.sol) at commit `6078fd93`.
 - [SPHINCS Playground](https://sphincs-playground.vercel.app) by Project Eleven, "a gamified explainer of SPHINCS+ and SPHINCS G few-time signatures", shown at the Devcon 8 workshop [leanSPHINCS for Developers](https://app.devcon.org/schedule/leansphincs-for-developers-how-to-build-on-post-quantum-ethereum) on 2026-11-05.
 - The [leanSphincs](https://github.com/leanEthereum/leanSphincs) competition from the Lean Ethereum project.

@@ -512,7 +512,7 @@ try {
   check(!/wallet/i.test(await page.title()), `title: ${await page.title()}`);
   check((await page.title()).startsWith("skinnyCAT · "), "the title names skinnyCAT");
   const ogImage = await page.getAttribute('meta[property="og:image"]', "content");
-  check(ogImage === "https://pq.classix.dev/og.png", `og:image is ${ogImage}`);
+  check(ogImage === "https://skinnycat.classix.dev/og.png", `og:image is ${ogImage}`);
   for (const f of ["og.png", "favicon.svg", "favicon.ico", "icon-512.png", "404.html"]) {
     const res = await page.request.get(new URL(f, APP).href);
     check(res.ok(), `/${f} is served (${res.status()})`);

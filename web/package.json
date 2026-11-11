@@ -2,7 +2,7 @@
   "name": "pq-classix",
   "version": "0.1.0",
   "private": true,
-  "description": "pq.classix.dev, quantum-secure transactions on Ethereum Classic with leanSPHINCS keys in the browser",
+  "description": "skinnycat.classix.dev, quantum-secure transactions on Ethereum Classic with leanSPHINCS keys in the browser",
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-contracts.mjs && node scripts/extract-vectors.mjs",
