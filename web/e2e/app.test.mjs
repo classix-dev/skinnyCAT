@@ -510,7 +510,7 @@ try {
 
   const { page } = await newPage(browser);
   check(!/wallet/i.test(await page.title()), `title: ${await page.title()}`);
-  check((await page.title()).startsWith("skinnyCAT · "), "the title names skinnyCAT");
+  check((await page.title()).startsWith("skinnyCAT ⬩ "), "the title names skinnyCAT");
   const ogImage = await page.getAttribute('meta[property="og:image"]', "content");
   check(ogImage === "https://skinnycat.classix.dev/og.png", `og:image is ${ogImage}`);
   for (const f of ["og.png", "favicon.svg", "favicon.ico", "icon-512.png", "404.html"]) {
