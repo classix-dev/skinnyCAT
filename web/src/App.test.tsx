@@ -53,7 +53,7 @@ describe("empty page", () => {
     expect(document.body.textContent).not.toMatch(/mordor|metc/i);
   });
 
-  test("links the EIPs, the spec commit and Classix", () => {
+  test("links the EIPs, the spec commit, Classix and the repo", () => {
     render(<App autoStart={false} />);
     const hrefs = [...document.querySelectorAll("a")].map((a) => a.getAttribute("href"));
     expect(hrefs).toEqual(
@@ -62,6 +62,7 @@ describe("empty page", () => {
         "https://eips.ethereum.org/EIPS/eip-8288",
         "https://github.com/ethereum/EthLib/commit/dce7a2de23a973d84eac38126a1527763cd3465d",
         "https://classix.dev",
+        "https://github.com/classix-dev/skinnyCAT",
       ]),
     );
     for (const a of document.querySelectorAll('a[target="_blank"]')) expect(a.getAttribute("rel")).toBe("noopener noreferrer");

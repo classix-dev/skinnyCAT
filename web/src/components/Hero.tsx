@@ -1,6 +1,7 @@
 import { FlaskConical } from "lucide-react";
 import { useApp, type State } from "../store";
 import { HashTree } from "./Brand";
+import { GitHubMark, LINKS } from "./ext";
 
 /** How far up the tree the cat is. It climbs while a key is derived or a signature is made, and rests on the root. */
 function climb(s: State): { t: number; moving: boolean } {
@@ -37,6 +38,16 @@ export function Hero() {
           <FlaskConical className="size-4 shrink-0 text-warn" aria-hidden />
           An educational demo, not a production app. It isn't audited, so use tiny amounts.
         </p>
+        <a
+          href={LINKS.repo}
+          target="_blank"
+          rel="noopener noreferrer"
+          data-testid="hero-github"
+          className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-white/[0.04] px-3.5 text-sm font-medium text-fg ring-1 ring-ink-600 ring-inset transition-colors hover:bg-white/[0.08]"
+        >
+          <GitHubMark className="size-4" />
+          Source on GitHub
+        </a>
       </div>
       <div className="hidden w-full lg:block" style={{ aspectRatio: "320 / 248" }}>
         <HashTree t={t} moving={moving} className="w-full" />

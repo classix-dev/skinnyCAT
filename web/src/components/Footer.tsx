@@ -1,5 +1,6 @@
+import { SitCat } from "./Cats";
 import { ByClassix } from "./ClassixWordmark";
-import { LINKS } from "./ext";
+import { GitHubMark, LINKS } from "./ext";
 
 const CREDITS: [string, string, string?][] = [
   [LINKS.sphincsArt, "sphincs.art", "by Tom Wambsgans"],
@@ -29,7 +30,23 @@ export function Footer() {
           </ul>
         </div>
         <div className="flex flex-col gap-3 md:items-end">
+          <a
+            href={LINKS.repo}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="footer-github"
+            className="inline-flex items-center gap-1.5 text-subtle transition-colors hover:text-fg"
+          >
+            <GitHubMark className="size-3.5" />
+            classix-dev/skinnyCAT
+          </a>
           <ByClassix className="text-xs" />
+          <p className="flex items-end gap-2 text-subtle" data-testid="no-cats-harmed">
+            <svg viewBox="-9 -24 18 25" className="h-5 w-4 shrink-0" aria-hidden="true" focusable="false">
+              <SitCat />
+            </svg>
+            No cats were put into superposition during the making of this website.
+          </p>
         </div>
       </div>
     </footer>
