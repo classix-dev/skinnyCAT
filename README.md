@@ -2,7 +2,7 @@
 
 The first quantum-secure signature on Ethereum Classic, made with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Then skinnyCAT, a deliberately silly demo app at skinnycat.classix.dev where anyone can make their own.
 
-This is a proof of concept and an experiment, built for fun. It isn't meant for real use. Nothing here is audited, so don't put in more ETC than you're happy to lose.
+This is an educational demo, not a production app. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
 Quantum-secure here means a quantum computer can't spend the funds. The gas is still paid by an ordinary account, which only risks its own gas money (see [Current Limitations](#current-limitations)).
 

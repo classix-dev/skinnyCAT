@@ -22,7 +22,7 @@ check(h1 === "Quantum-Secure Payments on Ethereum Classic", `h1: ${h1}`);
 check(!/wallet/i.test(h1), "h1 doesn't say wallet");
 for (const s of [
   "skinnyCAT moves ETC with a leanSPHINCS signature, which a quantum computer can&#x27;t forge.",
-  "A proof of concept, not audited.",
+  "An educational demo, not a production app.",
   "Two Cats, Two Keys",
   ">skinny<span",
   "Alice Deposits and Pays Bob",

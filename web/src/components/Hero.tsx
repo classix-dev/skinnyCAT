@@ -30,12 +30,12 @@ export function Hero() {
         </p>
         <p
           role="note"
-          aria-label="Proof of concept"
+          aria-label="Educational demo"
           data-testid="disclaimer"
           className="mt-6 flex max-w-xl items-center gap-2.5 text-[13px] text-muted"
         >
           <FlaskConical className="size-4 shrink-0 text-warn" aria-hidden />
-          A proof of concept, not audited. Use tiny amounts.
+          An educational demo, not a production app. It isn't audited, so use tiny amounts.
         </p>
       </div>
       <div className="hidden w-full lg:block" style={{ aspectRatio: "320 / 248" }}>
