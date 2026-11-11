@@ -28,7 +28,7 @@ describe("storage", () => {
     expect(loadSeed("bob")).toBe(b);
   });
   test("ignores junk", () => {
-    localStorage.setItem("pq-classix.bob.leansphincs-seed.v1", "0x1234");
+    localStorage.setItem("skinnycat.bob.leansphincs-seed.v1", "0x1234");
     expect(loadSeed("bob")).toBeNull();
   });
   test("moves the first version's single key to Alice", () => {
@@ -38,5 +38,15 @@ describe("storage", () => {
     expect(loadSeed("alice")).toBe(s);
     expect(localStorage.getItem("pq-classix.leansphincs-seed.v1")).toBeNull();
     expect(loadSeed("alice")).toBe(s);
+  });
+  test("moves keys saved under the old pq-classix names", () => {
+    const a = randomSeed();
+    const b = randomSeed();
+    localStorage.setItem("pq-classix.alice.leansphincs-seed.v1", a);
+    localStorage.setItem("pq-classix.bob.leansphincs-seed.v1", b);
+    expect(loadSeed("alice")).toBe(a);
+    expect(loadSeed("bob")).toBe(b);
+    expect(localStorage.getItem("skinnycat.bob.leansphincs-seed.v1")).toBe(b);
+    expect(localStorage.getItem("pq-classix.bob.leansphincs-seed.v1")).toBeNull();
   });
 });

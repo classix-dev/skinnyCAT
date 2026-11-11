@@ -107,7 +107,7 @@ contract LeanSphincsVerifierTest is LeanSphincsFFI {
     // ------------------------------------------------------------------
 
     function testFreshSignaturesFromTheSigner() public {
-        bytes32[2] memory seeds = [keccak256("pq-sig verifier test 1"), keccak256("pq-sig verifier test 2")];
+        bytes32[2] memory seeds = [keccak256("skinnycat verifier test 1"), keccak256("skinnycat verifier test 2")];
         bytes32[2] memory msgs = [keccak256("message one"), bytes32(type(uint256).max)];
         for (uint256 i; i < 2; i++) {
             (bytes32 s, bytes32 r, bytes memory sig) = _signWithKey(seeds[i], msgs[i]);

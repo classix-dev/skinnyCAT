@@ -16,8 +16,8 @@ contract LeanSphincsLedgerTest is LeanSphincsFFI {
 
     LeanSphincsLedger ledger;
 
-    bytes32 aliceSeed = keccak256("pq-sig ledger test alice");
-    bytes32 bobSeed = keccak256("pq-sig ledger test bob");
+    bytes32 aliceSeed = keccak256("skinnycat ledger test alice");
+    bytes32 bobSeed = keccak256("skinnycat ledger test bob");
     bytes32 aSeed;
     bytes32 aRoot;
     bytes32 bSeed;

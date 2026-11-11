@@ -9,9 +9,12 @@ export type Who = "alice" | "bob";
 export const WHO: Who[] = ["alice", "bob"];
 export const NAMES: Record<Who, string> = { alice: "Alice", bob: "Bob" };
 
-const storageKey = (who: Who) => `pq-classix.${who}.leansphincs-seed.v1`;
-/** The single key of the first version of the page becomes Alice's. */
-const LEGACY_KEY = "pq-classix.leansphincs-seed.v1";
+const storageKey = (who: Who) => `skinnycat.${who}.leansphincs-seed.v1`;
+/**
+ * Where earlier versions of the page kept keys, newest first. The site was called pq-classix, and
+ * its first version kept one key, which becomes Alice's.
+ */
+const oldKeys = (who: Who) => [`pq-classix.${who}.leansphincs-seed.v1`, ...(who === "alice" ? ["pq-classix.leansphincs-seed.v1"] : [])];
 
 export function randomSeed(): Hex {
   const b = new Uint8Array(32);
@@ -37,11 +40,11 @@ const valid = (s: string | null): s is Hex => !!s && /^0x[0-9a-f]{64}$/.test(s);
 export function loadSeed(who: Who): Hex | null {
   const s = localStorage.getItem(storageKey(who));
   if (valid(s)) return s;
-  if (who === "alice") {
-    const old = localStorage.getItem(LEGACY_KEY);
+  for (const k of oldKeys(who)) {
+    const old = localStorage.getItem(k);
     if (valid(old)) {
       localStorage.setItem(storageKey(who), old);
-      localStorage.removeItem(LEGACY_KEY);
+      localStorage.removeItem(k);
       return old;
     }
   }

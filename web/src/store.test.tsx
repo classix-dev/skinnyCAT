@@ -58,7 +58,7 @@ describe("keys", () => {
     expect(s().keys.alice.view).toBe("busy");
     await until(() => s().keys.alice.view === "have");
     const seed = s().keys.alice.seed!;
-    expect(localStorage.getItem("pq-classix.alice.leansphincs-seed.v1")).toBe(seed);
+    expect(localStorage.getItem("skinnycat.alice.leansphincs-seed.v1")).toBe(seed);
     const k = keyFor(seed);
     expect(s().keys.alice.account).toBe(accountOf(k.pkSeed, k.pkRoot));
     expect(s().keys.alice.fresh).toBe(true);
@@ -70,8 +70,8 @@ describe("keys", () => {
   test("start loads both stored keys", async () => {
     const a = randomSeed();
     const b = randomSeed();
-    localStorage.setItem("pq-classix.alice.leansphincs-seed.v1", a);
-    localStorage.setItem("pq-classix.bob.leansphincs-seed.v1", b);
+    localStorage.setItem("skinnycat.alice.leansphincs-seed.v1", a);
+    localStorage.setItem("skinnycat.bob.leansphincs-seed.v1", b);
     store.start();
     await until(() => s().keys.alice.view === "have" && s().keys.bob.view === "have");
     expect(s().keys.alice.seed).toBe(a);
@@ -104,7 +104,7 @@ describe("keys", () => {
     await until(() => s().keys.bob.view === "have");
     store.forgetKey("bob");
     expect(s().keys.bob).toMatchObject({ view: "none", seed: null, account: null });
-    expect(localStorage.getItem("pq-classix.bob.leansphincs-seed.v1")).toBeNull();
+    expect(localStorage.getItem("skinnycat.bob.leansphincs-seed.v1")).toBeNull();
   });
 
   test("a keygen failure comes back as an error", async () => {

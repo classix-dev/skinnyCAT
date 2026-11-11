@@ -10,7 +10,7 @@ import {ILeanSphincsVerifier} from "./ILeanSphincsVerifier.sol";
 ///      the same call that creates it. Runs on Spiral (Shanghai without withdrawals).
 contract LeanSphincsWallet {
     /// Domain tag for the signed message. Bump the version if the message layout changes.
-    bytes32 public constant EXECUTE_TAG = keccak256("classix.pq-sig.LeanSphincsWallet.execute.v1");
+    bytes32 public constant EXECUTE_TAG = keccak256("classix.skinnycat.LeanSphincsWallet.execute.v1");
 
     ILeanSphincsVerifier public immutable verifier;
     address public immutable factory;

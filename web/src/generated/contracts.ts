@@ -564,11 +564,11 @@ export const verifierAbi = [
 export const VERIFIER_NAME = "LeanSphincsVerifier";
 /** keccak256 of LeanSphincsVerifier's runtime bytecode (2803 bytes). */
 export const VERIFIER_CODE_HASH = "0xa5dd7e3be27339a79f0e7e9dc6ea0ca8b2d7f9a7c31922c2db84e061a9c1a687" as const;
-export const VERIFIER_ADDRESS = "0xDfa5321791eC461BE55dd5A447c3975942342F1A" as const;
+export const VERIFIER_ADDRESS = "0xafdAC7394b7e73b231bCf364EcB1bcB31F37e13d" as const;
 
 export const LEDGER_NAME = "skinnyCAT ETC";
 export const LEDGER_SYMBOL = "scETC";
-export const LEDGER_ADDRESS = "0x28b45670910108Cd9Ec60B562a54a39A19b2DBc6" as const;
+export const LEDGER_ADDRESS = "0x18246174c60D33997A2Dbfe167EE6af4B5cf2909" as const;
 
 /** CREATE2 salt preimage in script/Deploy.s.sol. */
-export const DEPLOY_SALT = "classix.pq-sig.v1";
+export const DEPLOY_SALT = "classix.skinnycat.v1";

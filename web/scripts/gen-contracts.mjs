@@ -1,5 +1,5 @@
 // Writes src/generated/contracts.ts from the Foundry build (run `forge build` in the repo root
-// first). Contract names, the salt and pqETC's constructor strings come from script/Deploy.s.sol,
+// first). Contract names, the salt and scETC's constructor strings come from script/Deploy.s.sol,
 // the ABIs and bytecode from ../out. The addresses are computed as the script computes them, with
 // the CREATE2 deployer, and the verifier code hash is keccak256 of its runtime bytecode, what
 // eth_getCode returns at that address.

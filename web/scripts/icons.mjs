@@ -75,8 +75,8 @@ p{margin:26px 0 0;font-size:38px;line-height:1.2;color:#c9d6ff;letter-spacing:-.
 <div class="mark">${markSvg(440)}</div>
 <div class="text"><h1>skinny<b>CAT</b></h1>
 <p>Quantum-secure payments on Ethereum Classic</p>
-<div class="small">leanSPHINCS, 2<sup style="font-size:.7em">30</sup> signatures a key<br>more lives than any cat needs</div></div>
-<div class="foot">A proof of concept by Classix · <span>not for real use</span></div>
+<div class="small">leanSPHINCS, hash-based signatures<br>made in your browser</div></div>
+<div class="foot">An educational demo by Classix · <span>not a production app</span></div>
 </div>`;
 
 const browser = await chromium.launch();

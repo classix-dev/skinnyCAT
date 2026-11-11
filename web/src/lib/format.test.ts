@@ -6,7 +6,7 @@ import { errMsg, fmt, parseAmount, revertName, short } from "./format";
 describe("fmt", () => {
   test("drops trailing zeros and caps at six decimals", () => {
     expect(fmt(10n ** 18n)).toBe("1");
-    expect(fmt(4n * 10n ** 17n, "pqETC")).toBe("0.4 pqETC");
+    expect(fmt(4n * 10n ** 17n, "scETC")).toBe("0.4 scETC");
     expect(fmt(1234567890123456789n, "ETC")).toBe("1.234567 ETC");
     expect(fmt(0n, "ETC")).toBe("0 ETC");
   });
@@ -33,7 +33,7 @@ describe("parseAmount", () => {
 });
 
 describe("errors", () => {
-  test("decodes pqETC's custom errors", () => {
+  test("decodes scETC's custom errors", () => {
     const data = encodeErrorResult({ abi: ledgerAbi, errorName: "BadSignature" });
     expect(revertName(data)).toBe("BadSignature()");
     expect(revertName("0x12345678")).toBeNull();

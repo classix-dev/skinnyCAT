@@ -1,10 +1,10 @@
 {
- "note": "Produced by scripts/digest-fixture.mjs from a deployed pqETC on anvil.",
+ "note": "Produced by scripts/digest-fixture.mjs from a deployed scETC on anvil.",
  "chainId": 61,
- "ledger": "0x28b45670910108Cd9Ec60B562a54a39A19b2DBc6",
+ "ledger": "0x18246174c60D33997A2Dbfe167EE6af4B5cf2909",
  "tags": {
-  "TRANSFER_TAG": "0xff488f1ebff93edc03977e70775eb16b9dc4da8c32296c8e95074a7f02822c1d",
-  "WITHDRAW_TAG": "0xd48552f7e985abe07eb7ec0665287a9d1676f88b6895a79c6c97dc29b1ae026b"
+  "TRANSFER_TAG": "0x0c852b85a8f67aaaa5f66ddcf14909e2ab15791980e114bc719551f262c818c5",
+  "WITHDRAW_TAG": "0xc21f1ace1e9067e96dc3b77504071060a7b8ad10fda98b0920268504adc83f85"
  },
  "accounts": [
   {
@@ -38,7 +38,7 @@
    "fee": "0",
    "deadline": "1800000000",
    "memo": "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
-   "digest": "0x3ef673371b72c0ea5f259cc299eaff645637874e8812e8ed5c22b25de611947a"
+   "digest": "0x5ce9a7d93684b95a1565961f6a0edb17678d1d4774932ea9c7c75ffd61552522"
   },
   {
    "kind": "withdraw",
@@ -49,7 +49,7 @@
    "fee": "0",
    "deadline": "1800000000",
    "memo": "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
-   "digest": "0x8520b6e4711d3d27a13daf5c390ece71c080552e8e3a386a6649538b99929107"
+   "digest": "0xca43dbcdc1474f092e13121bbf6cbb5471ec4cbb4f5e1c92a2cfd74527ac1536"
   },
   {
    "kind": "transfer",
@@ -60,7 +60,7 @@
    "fee": "1000000000000000",
    "deadline": "0",
    "memo": "",
-   "digest": "0xf75167edc10673a95a09e7eebbdb22630783ff0333aef334b519dbc5bdac9a41"
+   "digest": "0x9bf8b4ec7c2b0d3fd7fc5f1fdc57bda5124ecb8c520da706133611f1f238c368"
   },
   {
    "kind": "withdraw",
@@ -71,7 +71,7 @@
    "fee": "1000000000000000",
    "deadline": "0",
    "memo": "",
-   "digest": "0x949811518d3c553aeb90deca501516571a28f0a95eaa277b49c9194ba73f47f8"
+   "digest": "0x42129ffa849f7fd0b96424a6a824bad40004a0c6ea632794282ad10f2889fc5a"
   },
   {
    "kind": "transfer",
@@ -82,7 +82,7 @@
    "fee": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
    "deadline": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
    "memo": "thanks",
-   "digest": "0xfc7f869c03a8fcd936d9b00dad3a9e25d6eea305356d580b4cf0da06eacf82a7"
+   "digest": "0x39c30df47b2d0161505a983e777cdcc3a2a0da83612f2c5f0fa71bba5e73651d"
   },
   {
    "kind": "withdraw",
@@ -93,7 +93,7 @@
    "fee": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
    "deadline": "115792089237316195423570985008687907853269984665640564039457584007913129639935",
    "memo": "thanks",
-   "digest": "0xa75f59bf56d717e151835574fd06f6a8fd7ab9f7d9e5454a943ee23c1c03c21c"
+   "digest": "0x977cb899a0c903e626f72e39e4e0e7d3400b49fe395e416e6629ea024ae4225a"
   },
   {
    "kind": "transfer",
@@ -104,7 +104,7 @@
    "fee": "1",
    "deadline": "1",
    "memo": "Grüße 🔐, \"quoted\" and\nnew line",
-   "digest": "0xc457f909ae670596944fe1566416a6c93a37a56734c367bea1e9092ed82d054a"
+   "digest": "0x172696aa1902e3e0ba51def4d5a7b76066a731e64cc4753804cc41b1b87835bb"
   },
   {
    "kind": "withdraw",
@@ -115,7 +115,7 @@
    "fee": "1",
    "deadline": "1",
    "memo": "Grüße 🔐, \"quoted\" and\nnew line",
-   "digest": "0x9f872b3a4c045b0757e46b4943a189caa66ead1eae983110223469c9ee86c679"
+   "digest": "0xb1bcb532ffdefb35aff94555c2e396657f42eb0c24d10dae32e5c55a73f49628"
   },
   {
    "kind": "transfer",
@@ -126,7 +126,7 @@
    "fee": "0",
    "deadline": "2000000000",
    "memo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-   "digest": "0x48cc0f0bc75f9596d66b9a83ed5a184595f4a919415229a6f00bedd604bb13b7"
+   "digest": "0xa51cf2a4143737701e9811c10a082a93fc3452a39e698b8192c7850dead516ae"
   },
   {
    "kind": "withdraw",
@@ -137,7 +137,7 @@
    "fee": "0",
    "deadline": "2000000000",
    "memo": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-   "digest": "0xd990fac9423efdc1aef9cc13b19337e21514bce23447d8d8559f686bf93ea90f"
+   "digest": "0x45884e9bae3c71e228d54bdd3e16519adc4ce0e5994b34d4d00c28b02287c5f9"
   }
  ]
 }

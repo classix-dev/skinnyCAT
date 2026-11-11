@@ -90,7 +90,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
       "Alice blends the message, and the smoothie points at a spot to sign from.",
       "A new message points somewhere new. Alice keeps no list.",
       "One key is good for about a billion signatures.",
-      "That's more lives than any cat needs.",
+      "Past that the key starts to wear out, so make a new one.",
     ],
     real: "The message's hash picks one of 67 million FORS keys, a kind that can sign a few times. EthLib's proof covers 2^30 signatures per key.",
     realTarget: "hypertree",

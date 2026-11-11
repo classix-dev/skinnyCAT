@@ -1,8 +1,8 @@
-// Asks a deployed pqETC for transferDigest, withdrawDigest and accountOf on a spread of inputs, and
+// Asks a deployed scETC for transferDigest, withdrawDigest and accountOf on a spread of inputs, and
 // writes the answers to src/test/fixtures/digests.json. src/ledger.test.ts checks the page's
 // JavaScript against them. e2e/run.sh runs this against anvil after deploying.
 //
-//   node scripts/digest-fixture.mjs <rpc url> <pqETC address>
+//   node scripts/digest-fixture.mjs <rpc url> <scETC address>
 import { writeFileSync } from "node:fs";
 import { createPublicClient, http, keccak256, stringToHex } from "viem";
 import { ledgerAbi } from "../src/generated/contracts.ts";
@@ -61,6 +61,6 @@ const tags = {
 };
 writeFileSync(
   new URL("../src/test/fixtures/digests.json", import.meta.url),
-  JSON.stringify({ note: "Produced by scripts/digest-fixture.mjs from a deployed pqETC on anvil.", chainId, ledger, tags, accounts, digests }, null, 1) + "\n",
+  JSON.stringify({ note: "Produced by scripts/digest-fixture.mjs from a deployed scETC on anvil.", chainId, ledger, tags, accounts, digests }, null, 1) + "\n",
 );
-console.log(`wrote ${digests.length} digests and ${accounts.length} accounts from pqETC at ${ledger}, chain ${chainId}`);
+console.log(`wrote ${digests.length} digests and ${accounts.length} accounts from scETC at ${ledger}, chain ${chainId}`);

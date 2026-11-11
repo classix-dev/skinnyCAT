@@ -13,7 +13,7 @@ import {LeanSphincsLedger} from "../src/LeanSphincsLedger.sol";
 ///
 ///   forge script script/Deploy.s.sol --rpc-url classic --private-key $(cat key) --broadcast --legacy
 contract Deploy is Script {
-    bytes32 constant SALT = keccak256("classix.pq-sig.v1");
+    bytes32 constant SALT = keccak256("classix.skinnycat.v1");
 
     function run() external returns (address verifier, address factory, address ledger) {
         bytes memory vInit = type(LeanSphincsVerifier).creationCode;

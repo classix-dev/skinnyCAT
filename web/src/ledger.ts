@@ -17,8 +17,8 @@ import {
 } from "viem";
 import { ledgerAbi } from "./generated/contracts";
 
-export const TRANSFER_TAG = keccak256(stringToHex("classix.pq-sig.LeanSphincsLedger.transfer.v1"));
-export const WITHDRAW_TAG = keccak256(stringToHex("classix.pq-sig.LeanSphincsLedger.withdraw.v1"));
+export const TRANSFER_TAG = keccak256(stringToHex("classix.skinnycat.LeanSphincsLedger.transfer.v1"));
+export const WITHDRAW_TAG = keccak256(stringToHex("classix.skinnycat.LeanSphincsLedger.withdraw.v1"));
 /** The scheme byte EIP-8288 gives leanSPHINCS. */
 export const LEANSPHINCS_SCHEME = "0x10";
 

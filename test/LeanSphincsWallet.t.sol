@@ -14,7 +14,7 @@ contract LeanSphincsWalletTest is LeanSphincsFFI {
     ILeanSphincsVerifier verifier;
     LeanSphincsWalletFactory factory;
 
-    bytes32 seed = keccak256("pq-sig wallet test seed");
+    bytes32 seed = keccak256("skinnycat wallet test seed");
     bytes32 pkSeed;
     bytes32 pkRoot;
     address payable predicted;
@@ -174,7 +174,7 @@ contract LeanSphincsWalletTest is LeanSphincsFFI {
     {
         bytes32 m = keccak256(
             abi.encode(
-                keccak256("classix.pq-sig.LeanSphincsWallet.execute.v1"),
+                keccak256("classix.skinnycat.LeanSphincsWallet.execute.v1"),
                 block.chainid,
                 wallet,
                 nonce_,

@@ -64,7 +64,7 @@ On load the page checks the deployed verifier's code hash and runs EthLib vector
 
 Testing, as of 2026-11-11.
 
-- 131 Vitest unit tests with Testing Library and axe.
+- 132 Vitest unit tests with Testing Library and axe.
 - An end-to-end run (`npm run test:e2e`) against anvil as chain 61 on Shanghai rules. It deploys with the real script, drives the whole Alice and Bob story in Playwright, fails on any console error or hydration warning, and checks the layout at six widths from 320 to 1440 px. From 768 px up Alice and Bob sit side by side.
 - Lighthouse on the live site scores 100 for accessibility, best practices and SEO, 100 for desktop performance and 90 to 92 for mobile performance.
 

@@ -7,12 +7,12 @@ import {ILeanSphincsVerifier} from "./ILeanSphincsVerifier.sol";
 /// @notice Wrapped ETC that only a leanSPHINCS key can move. Deposit ETC to a key, then move it
 ///         with signed messages that anyone can submit. The submitter collects a fee the key
 ///         signed for, so the owner needs no ECDSA account at all.
-/// @dev Demo project, built for fun, unaudited. Each key is shown to ERC-20 readers as an
+/// @dev Educational demo, not a production contract, unaudited. Each key is shown to ERC-20 readers as an
 ///      account address derived from its hash, which no ECDSA key controls. There is no
 ///      msg.sender-based transfer or approve, since that would bring ECDSA back.
 contract LeanSphincsLedger {
-    bytes32 public constant TRANSFER_TAG = keccak256("classix.pq-sig.LeanSphincsLedger.transfer.v1");
-    bytes32 public constant WITHDRAW_TAG = keccak256("classix.pq-sig.LeanSphincsLedger.withdraw.v1");
+    bytes32 public constant TRANSFER_TAG = keccak256("classix.skinnycat.LeanSphincsLedger.transfer.v1");
+    bytes32 public constant WITHDRAW_TAG = keccak256("classix.skinnycat.LeanSphincsLedger.withdraw.v1");
 
     ILeanSphincsVerifier public immutable verifier;
     string public name;

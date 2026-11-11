@@ -16,7 +16,7 @@ cd "$(dirname "$0")/.."
 RPC=$1 SEED_FILE=$2 TO=$3 VALUE_ETH=$4 RELAYER_KEY_FILE=${5:-}
 FACTORY=${FACTORY:?set FACTORY to the LeanSphincsWalletFactory address (forge script script/Deploy.s.sol prints it)}
 SIGNER=(node signer/node_modules/tsx/dist/cli.mjs signer/src/cli.ts)
-TAG=$(cast keccak "classix.pq-sig.LeanSphincsWallet.execute.v1")
+TAG=$(cast keccak "classix.skinnycat.LeanSphincsWallet.execute.v1")
 
 SEED=$(tr -d ' \n' < "$SEED_FILE")
 PK=$("${SIGNER[@]}" keygen "$SEED")             # PK.seed ‖ PK.root, 32 bytes
