@@ -63,8 +63,7 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
                   data-testid="predeploy"
                   className="rounded-xl bg-warn/[0.06] px-4 py-3 text-[13px] leading-relaxed text-muted ring-1 ring-warn/25 ring-inset md:col-span-2"
                 >
-                  <span className="font-medium text-fg">The cats are still in the box.</span> {LEDGER_SYMBOL} isn't on Ethereum
-                  Classic mainnet yet. You can make keys and sign with Sign Only now. Sending opens once the contracts are deployed.
+                  {LEDGER_SYMBOL} isn't on mainnet yet. Keys and Sign Only work now, sending comes after the deploy.
                 </p>
               )}
               <KeysStep />

@@ -289,9 +289,7 @@ export function HowItWorks() {
         How It Works
       </h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
-        Alice pays Bob, Bob pays back without owning any ETC, then Bob takes ETC out to a fresh address. On this page one
-        browser wallet plays both Alice's wallet and the relayer. A cat carries each message across so you can watch what
-        moves. The arrows and labels are exact, and the cat doesn't touch what it carries.
+        Alice pays Bob, Bob pays back without any ETC, then withdraws to a fresh address.
       </p>
       <figure
         ref={figure}
@@ -410,11 +408,6 @@ export function HowItWorks() {
           </div>
         </div>
       </figure>
-      <p className="mt-4 max-w-2xl text-[13px] leading-relaxed text-muted">
-        Every signed message covers the chain ID, the contract, the sender's nonce, the recipient, the amount, the fee, a
-        deadline and the memo. A relayer can't change any of it, a signature can't be replayed, and a signature from
-        another chain fails.
-      </p>
     </section>
   );
 }

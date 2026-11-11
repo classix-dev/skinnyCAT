@@ -6,7 +6,7 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SCENES } from "./copy";
-import { ELI5_SCENES, MODES, realAnchor, UI } from "./eli5/copy";
+import { ELI5_SCENES, MODES, UI } from "./eli5/copy";
 import BlenderScene from "./eli5/scenes/BlenderScene";
 import StairsScene from "./eli5/scenes/StairsScene";
 import { Explainer } from "./index";
@@ -80,22 +80,13 @@ describe("the toggle", () => {
     expect(document.getElementById("how-merkle")).toBeTruthy();
   });
 
-  it("follows 'see it for real' to the matching detailed scene", async () => {
+  it("one 'see it for real' link at the end opens the detailed version", async () => {
     render(<Explainer />);
-    const stairs = document.getElementById("eli5-stairs")!;
-    fireEvent.click(within(stairs).getByRole("link", { name: new RegExp(UI.seeReal) }));
+    const links = screen.getAllByRole("link", { name: new RegExp(UI.seeReal) });
+    expect(links).toHaveLength(1);
+    fireEvent.click(links[0]);
     expect(mode()).toBe("real");
-    expect(location.hash).toBe("#how-wots");
     await screen.findByTestId("sphincs-explainer");
-    expect(document.getElementById("how-wots")).toBeTruthy();
-  });
-
-  it("every 'see it for real' link points at a section the detailed explainer renders", async () => {
-    render(<Explainer />);
-    const anchors = ELI5_SCENES.map((s) => realAnchor(s.realTarget));
-    fireEvent.click(toggle("real"));
-    await screen.findByTestId("sphincs-explainer");
-    for (const a of anchors) expect(document.getElementById(a), a).toBeTruthy();
   });
 });
 

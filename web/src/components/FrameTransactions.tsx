@@ -40,8 +40,8 @@ export function FrameTransactions() {
         Frame Transactions Instead of Meta-Transactions
       </h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
-        ETC has no way for an account to pay its own gas with anything but an ECDSA signature, so {LEDGER_SYMBOL} uses
-        meta-transactions. Ethereum's draft answer is the frame transaction, <A href={LINKS.eip8141}>EIP-8141</A>.
+        On ETC only an ECDSA account can pay gas, so {LEDGER_SYMBOL} uses a relayer. Ethereum's draft fix is the frame
+        transaction, <A href={LINKS.eip8141}>EIP-8141</A>.
       </p>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
@@ -58,11 +58,6 @@ export function FrameTransactions() {
               </Box>
             </Box>
           </div>
-          <ol className="mt-4 list-decimal space-y-1 pl-5 text-[13px] leading-relaxed text-muted marker:text-subtle">
-            <li>Bob signs a {LEDGER_SYMBOL} transfer with his leanSPHINCS key.</li>
-            <li>A relayer wraps it in an ordinary transaction and pays the gas.</li>
-            <li>{LEDGER_SYMBOL} checks Bob's signature, moves his balance and pays the relayer Bob's fee.</li>
-          </ol>
         </figure>
 
         <figure className="rounded-2xl bg-ink-900/70 p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5" aria-labelledby="frames-8141">
@@ -77,34 +72,9 @@ export function FrameTransactions() {
             </Box>
           </div>
           <p className="mt-4 text-[13px] leading-relaxed text-muted">
-            The signature hash is <span className="mono text-xs text-fg">keccak256(0x06 ‖ rlp(tx))</span> with the signature
-            left out, so Bob's signature covers the gas too. The <A href={LINKS.workshop}>Devcon workshop</A> sends this kind of
-            transaction on the Daisugi research testnet.
+            The <A href={LINKS.workshop}>Devcon workshop</A> sends one on the Daisugi testnet.
           </p>
         </figure>
-      </div>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5">
-          <h3 className="text-sm font-semibold text-fg">Aggregation With EIP-8288</h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            In <A href={LINKS.eip8288}>EIP-8288</A>, block builders replace a block's leanSPHINCS signatures with one aggregate
-            proof, about 33,000 gas per signature as written and no signature in calldata. It gives leanSPHINCS the scheme
-            byte <span className="mono text-xs text-fg">0x10</span>, which {LEDGER_SYMBOL} already uses for its addresses.{" "}
-            <a href="#aggregation" className="text-accent-hi underline decoration-accent-hi/40 underline-offset-2 hover:decoration-accent-hi">
-              Aggregation
-            </a>{" "}
-            below shows how it works.
-          </p>
-        </div>
-        <div className="rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5">
-          <h3 className="text-sm font-semibold text-fg">What ETC Would Need</h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            An ECIP and a hard fork, since frame transactions change what makes a transaction valid. EIP-8141's fee fields
-            follow EIP-1559, which ETC doesn't have yet, and <A href={LINKS.ecip1120}>ECIP-1120</A> proposes a basefee market
-            for it. Until then, meta-transactions are how ETC can do this.
-          </p>
-        </div>
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-2xl ring-1 ring-white/[0.07] ring-inset">
@@ -132,6 +102,10 @@ export function FrameTransactions() {
           </tbody>
         </table>
       </div>
+      <p className="mt-4 max-w-2xl text-[13px] leading-relaxed text-muted">
+        ETC would need an ECIP and a hard fork, plus a basefee market like <A href={LINKS.ecip1120}>ECIP-1120</A>, since
+        EIP-8141's fee fields follow EIP-1559.
+      </p>
     </section>
   );
 }

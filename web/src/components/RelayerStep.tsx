@@ -9,12 +9,11 @@ import { addressUrl } from "../config";
 export function RelayerStep() {
   const s = useApp();
   return (
-    <StepCard id="step-relayer" n={2} title="The Cat Courier" done={!!s.conn} wide>
+    <StepCard id="step-relayer" n={2} title="Browser Wallet" done={!!s.conn} wide>
       <div className="flex items-start gap-3">
         <CourierCat className="mt-0.5 h-8 w-10 shrink-0" />
         <p className="text-[13px] leading-relaxed text-muted">
-          Your browser wallet plays the cat courier. It pays the gas and carries Alice's ETC in. For Bob, it relays the note
-          he signs and keeps the fee he signed for. It can't change a signed note, and it only risks its own gas money.
+          It pays the gas and relays Bob's signed notes for his fee. It can't change what a cat signs.
         </p>
       </div>
       <div className="mt-4">{s.conn ? <Connected /> : <Pick />}</div>
@@ -39,7 +38,7 @@ function Pick() {
         <p className="flex items-center gap-2.5 text-xs text-subtle" data-testid="web3-none">
           <EmptyBox className="h-6 w-7.5 shrink-0" />
           {live
-            ? "No browser wallet found, so the courier's box is empty. Install one that supports Ethereum Classic, or use Sign Only below."
+            ? "No browser wallet found. Sign Only works without one."
             : "Looking for browser wallets."}
         </p>
       )}

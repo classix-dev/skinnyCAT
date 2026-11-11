@@ -8,11 +8,9 @@ import {
   AGG_STEPS,
   CALLDATA_GAS,
   ECDSA_BYTES,
-  FRAME_GAS,
   num,
   SIG_BYTES,
   SIGS,
-  STARK_GAS,
   TODAY_GAS,
   VERIFY_GAS,
 } from "./aggData";
@@ -533,10 +531,6 @@ function Caption({ s }: { s: Player }) {
   );
 }
 
-function Quote({ children }: { children: ReactNode }) {
-  return <blockquote className="my-3 border-l-2 border-cyan/50 pl-3 text-[13px] leading-relaxed text-fg italic">{children}</blockquote>;
-}
-
 type Option = { name: string; fork: boolean; verdict: string; tone: "cyan" | "warn" | "bad"; text: ReactNode };
 
 const OPTIONS: Option[] = [
@@ -545,35 +539,35 @@ const OPTIONS: Option[] = [
     fork: true,
     verdict: "the clean answer",
     tone: "cyan",
-    text: "EIP-8141 and EIP-8288 together, through ECIPs and a hard fork. Every client would also need STARK aggregation in its mempool, which is new work for all of them. A long way off.",
+    text: "EIP-8141 and EIP-8288 through ECIPs, and STARK aggregation in every client's mempool. A long way off.",
   },
   {
     name: "Sign a batch once",
     fork: false,
     verdict: "one signer only",
     tone: "warn",
-    text: "A signer signs the Merkle root of many messages, so each transfer carries the 7,740-byte signature once per batch and a short Merkle path per item. It helps an exchange or a payroll, not many users.",
+    text: "One signature over a Merkle root of many payments. Helps an exchange, not many users.",
   },
   {
     name: "Relay many in one transaction",
     fork: false,
     verdict: "a small saving",
     tone: "warn",
-    text: `A relayer submits several signed ${LEDGER_SYMBOL} transfers in one call. That saves the 21,000 base cost per transaction, and each signature still costs its full calldata and verification.`,
+    text: `Several ${LEDGER_SYMBOL} transfers in one call. Saves 21,000 gas each, signatures still cost in full.`,
   },
   {
     name: "Prove the batch with a STARK on chain",
     fork: false,
     verdict: "doesn't fit",
     tone: "bad",
-    text: "EIP-8288 puts such proofs at 128 KB to 512 KB. That's 2 to 8 million gas of calldata alone, against ETC's 8,000,000 gas block limit.",
+    text: "Proofs run 128 to 512 KB, 2 to 8 million gas of calldata in an 8 million gas block.",
   },
   {
     name: "Wrap it in a SNARK",
     fork: false,
     verdict: "ruled out",
     tone: "bad",
-    text: "A Groth16 proof on ETC's BN254 precompiles verifies for a few hundred thousand gas. It rests on elliptic-curve pairings, which a quantum computer breaks, so the result is no longer quantum-secure.",
+    text: "Cheap to verify, but it rests on elliptic curves, which a quantum computer breaks.",
   },
 ];
 
@@ -602,9 +596,8 @@ export function Aggregation() {
         Aggregation
       </h2>
       <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted">
-        A leanSPHINCS signature is {num(SIG_BYTES)} bytes, about 119 times a {ECDSA_BYTES}-byte ECDSA signature, and on ETC
-        every node stores and checks each one. Ethereum's plan, <A href={LINKS.eip8288}>EIP-8288</A>, keeps the signatures off
-        chain and puts one proof in each block instead. None of it works on ETC yet.
+        Ethereum's draft <A href={LINKS.eip8288}>EIP-8288</A> keeps signatures off chain and puts one proof in each block.
+        ETC can't do this yet.
       </p>
 
       <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-4" data-testid="agg-stats">
@@ -685,7 +678,7 @@ export function Aggregation() {
                   </span>
                   <div className="min-w-0 text-[13px] leading-snug">
                     <div className={cx("text-xs font-medium", active ? "text-cyan" : "text-accent-hi")}>{st.title}</div>
-                    <div className="text-muted">{st.caption}</div>
+                    <div className="sr-only">{st.caption}</div>
                   </div>
                 </li>
               );
@@ -693,40 +686,6 @@ export function Aggregation() {
           </ol>
         </div>
       </figure>
-
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5">
-          <h3 className="text-sm font-semibold text-fg">The Plan on Ethereum</h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            <A href={LINKS.eip8288}>EIP-8288</A>, “In-mempool signature and proof aggregation”, is a draft by Vitalik Buterin
-            and Thomas Coratger from 2026-06-03. It starts from the cost.
-          </p>
-          <Quote>Current proposals for hash-based signatures are in the range of ~2-3 kB and ~150,000 to 200,000 gas to verify.</Quote>
-          <p className="text-[13px] leading-relaxed text-muted">Its answer is that the signatures never reach the chain. Instead</p>
-          <Quote>the block contains one single recursive STARK that proves their existence</Quote>
-          <p className="text-[13px] leading-relaxed text-muted">
-            The proof is hash-based too, so aggregation stays post-quantum. The dependency frame is a new frame mode for{" "}
-            <A href={LINKS.eip8141}>EIP-8141</A>, so EIP-8288 needs frame transactions first.
-          </p>
-        </div>
-        <div className="rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5" data-testid="agg-cost">
-          <h3 className="text-sm font-semibold text-fg">The Cost, as Written</h3>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            A transaction pays {num(FRAME_GAS)} gas per leanSPHINCS signature for its dependency frame, plus{" "}
-            <span className="mono text-xs text-fg">LEANSTARK_VERIFICATION_GAS</span>, {num(STARK_GAS)}, per dependency. That's
-            about {num(AGG_GAS)} gas for one signature against about {num(TODAY_GAS)} on ETC today, with no calldata for the
-            signature. The draft doesn't add it up itself. It does say why it's cheap.
-          </p>
-          <Quote>
-            It is much cheaper than the onchain costs for similar operations because the cost is only paid by the builder and
-            the mempool, not by all validating nodes.
-          </Quote>
-          <p className="text-[13px] leading-relaxed text-muted">
-            Still open in the draft are the recursion circuit, the dependency hash (BLAKE2s today, BLAKE3 the likely
-            replacement), the aggregated verification key and more DoS exposure in the mempool.
-          </p>
-        </div>
-      </div>
 
       <div className="mt-4 rounded-2xl p-4 ring-1 ring-white/[0.07] ring-inset sm:p-5">
         <h3 className="text-sm font-semibold text-fg">What ETC Can Do</h3>
@@ -744,7 +703,6 @@ export function Aggregation() {
             </li>
           ))}
         </ul>
-        <p className="mt-3 text-[13px] leading-relaxed text-fg">So for now skinnyCAT pays full price for every signature, and we say so.</p>
       </div>
     </section>
   );

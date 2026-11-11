@@ -3,7 +3,6 @@ import { LEDGER_SYMBOL } from "../generated/contracts";
 import { fmt } from "../lib/format";
 import { act, setBob, useApp, type State } from "../store";
 import type { Kind } from "../ledger";
-import { CatAvatar } from "./Cats";
 import { StepCard } from "./StepCard";
 import { Timeline } from "./Timeline";
 import { Button, Field, Spinner, StatusLine, cx, inputClass } from "./ui";
@@ -13,9 +12,9 @@ const RELAY_GAS = 300_000n;
 
 function hint(s: State): string {
   if (!s.keys.bob.key) return "Create or import Bob's key first.";
-  if (s.deployed === false) return "Relaying opens once the contracts are on mainnet. Sign Only works now.";
-  if (!s.conn) return "Connect a browser wallet to relay, or Sign Only to sign and check without sending.";
-  return "Bob signs here, and the cat courier (your browser wallet) submits it for the fee in ETC.";
+  if (s.deployed === false) return "Relaying opens once the contracts are on mainnet.";
+  if (!s.conn) return "Connect a browser wallet to relay, or use Sign Only.";
+  return "Bob signs, and the browser wallet submits it for the fee.";
 }
 
 export function BobStep() {
@@ -44,14 +43,6 @@ export function BobStep() {
   );
   return (
     <StepCard id="step-bob" n={4} title="Bob Pays Back Without ETC" done={confirmed && !busy}>
-      <div className="mb-4 flex gap-2.5 rounded-xl bg-cyan/[0.05] p-3 text-[13px] leading-relaxed text-muted ring-1 ring-cyan/20 ring-inset" data-testid="bob-note">
-        <CatAvatar who="bob" awake className="size-7 shrink-0 text-cyan" />
-        <p>
-          <span className="text-fg">Bob never needs ETC.</span> He's a stray, after all. He signs a note, and the cat courier
-          submits it, pays the gas and earns the fee Bob signed for. The fee, the amount and the recipient are all inside
-          the signature, so the courier can't change any of them.
-        </p>
-      </div>
       <form
         className="space-y-3"
         onSubmit={(e) => {
@@ -134,7 +125,7 @@ export function BobStep() {
           {f.error ? <StatusLine tone="error">{f.error}</StatusLine> : <p className="text-xs text-subtle">{hint(s)}</p>}
           {gasCost !== null && (
             <p className="text-xs text-subtle" data-testid="bob-gas-hint">
-              A relayed send uses about 300,000 gas, around {fmt(gasCost, "ETC")} at today's gas price.
+              A relayed send costs about {fmt(gasCost, "ETC")} in gas.
             </p>
           )}
         </div>

@@ -8,9 +8,9 @@ import { Button, Field, Spinner, StatusLine, cx, inputClass } from "./ui";
 function hint(s: State): string {
   if (!s.keys.alice.key) return "Create or import Alice's key first.";
   if (!s.keys.bob.key) return "Bob needs a key too, so Alice has someone to pay.";
-  if (s.deployed === false) return "Sending opens once the contracts are on mainnet. Sign Only works now.";
-  if (!s.conn) return "Connect a browser wallet to send, or Sign Only to sign and check without sending.";
-  return `One transaction. The ETC is deposited to Alice's key first, then her signed transfer moves ${LEDGER_SYMBOL} to Bob.`;
+  if (s.deployed === false) return "Sending opens once the contracts are on mainnet.";
+  if (!s.conn) return "Connect a browser wallet to send, or use Sign Only.";
+  return `Deposit and payment go in one transaction.`;
 }
 
 export function AliceStep() {
@@ -30,7 +30,7 @@ export function AliceStep() {
         }}
       >
         <div className="flex flex-col gap-3 min-[420px]:flex-row min-[420px]:items-end">
-          <Field label="Deposit from the browser wallet" suffix="ETC">
+          <Field label="Deposit" suffix="ETC">
             <input
               data-testid="alice-deposit"
               inputMode="decimal"
@@ -52,7 +52,7 @@ export function AliceStep() {
           </Field>
         </div>
         <label className="block">
-          <span className="mb-1.5 block text-xs font-medium text-muted">Message, signed and emitted on chain</span>
+          <span className="mb-1.5 block text-xs font-medium text-muted">Message</span>
           <textarea
             data-testid="alice-memo"
             rows={3}

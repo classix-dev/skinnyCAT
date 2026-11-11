@@ -21,9 +21,8 @@ export interface Eli5Copy {
 }
 
 export const ELI5_INTRO = {
-  kicker: "Explainer",
   title: "How a Quantum-Safe Signature Works",
-  lede: "Alice is a cat with coins to guard. Her signature is built from one thing, a blender that only runs forward. Six pictures show how.",
+  lede: "It all rests on a blender that only runs forward.",
 };
 
 /** The toggle's labels. */
@@ -33,7 +32,6 @@ export const UI = {
   realLabel: "What it is for real",
   seeReal: "See it for real",
   toReal: "Ready for the real thing?",
-  toRealBody: "The same signature, step by step, drawn from a real one.",
   toEli5: "Back to Like I'm Five",
 };
 
@@ -41,7 +39,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "blender",
     title: "The Magic Blender",
-    body: "Fruit goes in and a smoothie comes out. Anyone can blend the same fruit and check that it makes the same smoothie, but nobody can turn a smoothie back into fruit.",
+    body: "Anyone can blend fruit into a smoothie. Nobody can turn it back.",
     steps: [
       "Fruit drops into the magic blender.",
       "Whirr! Out comes a smoothie.",
@@ -56,7 +54,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "stairs",
     title: "Secret Stairs",
-    body: "Alice hides a secret note at the bottom of each staircase, and the tops are public. Each step up is one more trip through the blender, so anyone can carry a note up and nobody can carry it down.",
+    body: "Each step up is one more trip through the blender, so notes only go up.",
     steps: [
       "A secret note waits at the bottom of each staircase. The tops are public.",
       "To sign, Alice shows each note partway up. The message picks how high.",
@@ -72,7 +70,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "tree",
     title: "One Name Tag for Millions of Stairs",
-    body: "A set of stairs is safe for signing one thing only, so Alice builds millions of them. They blend together in pairs, level by level, into one name tag, her public key.",
+    body: "Millions of staircases blend down to one name tag, her public key.",
     steps: [
       "A set of stairs signs one thing only, so Alice builds lots of them.",
       "Pairs go through the blender together, level by level.",
@@ -87,7 +85,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "picks",
     title: "The Message Picks the Stairs",
-    body: "Alice blends each message, and the smoothie points at the spot to sign from. She never keeps a list, and each spot can safely sign a few times, so one key signs about a billion times. That's more lives than any cat needs.",
+    body: "The message itself picks where to sign from, so Alice keeps no list.",
     steps: [
       "Alice blends the message, and the smoothie points at a spot to sign from.",
       "A new message points somewhere new. Alice keeps no list.",
@@ -102,7 +100,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "quantum",
     title: "Why a Quantum Computer Can't Help",
-    body: "A big quantum computer is great at picking one kind of math lock, the kind on today's ECDSA keys, and that lock is in trouble. Against the blender it can only guess faster, which still leaves about 2^64 guesses, far out of reach.",
+    body: "It can pick the lock on today's keys. Against the blender it can only guess.",
     steps: [
       "Here comes a big quantum computer.",
       "It can pick the math lock on today's ECDSA keys.",
@@ -117,7 +115,7 @@ export const ELI5_SCENES: Eli5Copy[] = [
   {
     id: "catch",
     title: "The Catch",
-    body: "Alice's signature is big, a long scroll next to today's sticky note, so it costs more gas. When a contract checks it, the box opens and the skinny cat jumps out.",
+    body: "The signature is big, so it costs more gas.",
     steps: [
       "Today's signatures fit on a sticky note, 65 bytes.",
       "Alice's is a long scroll, 7,740 bytes.",

@@ -82,31 +82,25 @@ const caption = () => screen.getByTestId("agg-caption");
 const actor = (id: string, layout = "wide") => screen.getByTestId(`agg-stage-${layout}`).querySelector(`[data-actor="${id}"]`) as SVGGElement;
 
 describe("Aggregation", () => {
-  test("says what the doc says, with its quotes and links", () => {
+  test("gives the doc's numbers and links", () => {
     render(<Aggregation />);
     const sec = screen.getByTestId("agg");
     expect(sec.id).toBe("aggregation");
     expect(screen.getByRole("heading", { level: 2 }).textContent).toBe("Aggregation");
     const text = sec.textContent!;
     for (const s of [
-      "7,740 bytes, about 119 times a 65-byte ECDSA signature",
+      "7,740 B",
       "≈123,000",
       "≈86,000",
       "≈33,000",
-      "Current proposals for hash-based signatures are in the range of ~2-3 kB and ~150,000 to 200,000 gas to verify.",
-      "the block contains one single recursive STARK that proves their existence",
-      "It is much cheaper than the onchain costs for similar operations because the cost is only paid by the builder and the mempool, not by all validating nodes.",
-      "about 33,000 gas for one signature against about 209,000 on ETC today",
-      "So for now skinnyCAT pays full price for every signature, and we say so.",
+      "keeps signatures off chain and puts one proof in each block",
     ])
       expect(text).toContain(s);
-    expect(sec.querySelectorAll("blockquote")).toHaveLength(3);
     const links = [...sec.querySelectorAll("a")].map((a) => a.getAttribute("href"));
     expect(links).toContain("https://eips.ethereum.org/EIPS/eip-8288");
-    expect(links).toContain("https://eips.ethereum.org/EIPS/eip-8141");
     for (const a of sec.querySelectorAll('a[target="_blank"]')) expect(a.getAttribute("rel")).toBe("noopener noreferrer");
     // The headings are in Title Case, and the prose has no em dashes or semicolons.
-    expect([...sec.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(["The Plan on Ethereum", "The Cost, as Written", "What ETC Can Do"]);
+    expect([...sec.querySelectorAll("h3")].map((h) => h.textContent)).toEqual(["What ETC Can Do"]);
     expect(text).not.toMatch(/[—;]/);
   });
 
@@ -116,10 +110,10 @@ describe("Aggregation", () => {
     expect(items.map((i) => i.dataset.fork)).toEqual(["1", "0", "0", "0", "0"]);
     const all = items.map((i) => i.textContent).join(" ");
     expect(all).toContain("Merkle root");
-    expect(all).toContain("21,000 base cost");
-    expect(all).toContain("128 KB to 512 KB");
-    expect(all).toContain("8,000,000 gas block limit");
-    expect(all).toContain("elliptic-curve pairings");
+    expect(all).toContain("Saves 21,000 gas each");
+    expect(all).toContain("128 to 512 KB");
+    expect(all).toContain("8 million gas block");
+    expect(all).toContain("elliptic curves");
     expect(items[4].textContent).toContain("ruled out");
   });
 

@@ -37,14 +37,14 @@ async function noAxeViolations(el: Element) {
 }
 
 describe("empty page", () => {
-  test("headline, notice and definition, and nothing calls it a wallet", () => {
+  test("headline, what it is, the notice, and nothing calls it a wallet", () => {
     render(<App autoStart={false} />);
     const h1 = screen.getByRole("heading", { level: 1 });
     expect(h1.textContent).toBe("Quantum-Secure Payments on Ethereum Classic");
     expect(h1.textContent).not.toMatch(/wallet/i);
-    expect(screen.getByTestId("disclaimer").textContent).toMatch(/proof of concept and an experiment, built for fun.*isn't meant for real use.*audited.*tiny amounts/i);
-    expect(screen.getByTestId("definition").textContent).toMatch(/quantum computer can't spend the funds.*only risks its own gas money/);
-    for (const name of ["Two Cats, Two Keys", "The Cat Courier", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
+    expect(screen.getByTestId("lead").textContent).toMatch(/skinnyCAT moves ETC with a leanSPHINCS signature, which a quantum computer can't forge/);
+    expect(screen.getByTestId("disclaimer").textContent).toMatch(/proof of concept, not audited. Use tiny amounts/i);
+    for (const name of ["Two Cats, Two Keys", "Browser Wallet", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
       expect(screen.getByRole("heading", { name })).toBeTruthy();
     expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev");
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", true);
@@ -103,7 +103,7 @@ describe("with keys", () => {
     expect(screen.getAllByRole("link", { name: "Open in explorer" })[0].getAttribute("href")).toBe(`https://etc.blockscout.com/address/${alice.account}`);
     expect(screen.getByTestId("alice-sign-only")).toHaveProperty("disabled", false);
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", true);
-    expect(screen.getByTestId("alice-hint").textContent).toMatch(/Connect a browser wallet to send, or Sign Only/);
+    expect(screen.getByTestId("alice-hint").textContent).toBe("Connect a browser wallet to send, or use Sign Only.");
     expect(screen.getByTestId("web3-none").textContent).toMatch(/No browser wallet found/);
   });
 
@@ -126,8 +126,7 @@ describe("with keys", () => {
     const { container } = render(<App autoStart={false} />);
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", false);
     expect(screen.getByTestId("web3-balance").textContent).toBe("2 ETC");
-    expect(screen.getByTestId("bob-gas-hint").textContent).toBe("A relayed send uses about 300,000 gas, around 0.0012 ETC at today's gas price.");
-    expect(screen.getByTestId("bob-note").textContent).toMatch(/Bob never needs ETC.*can't change any of them/);
+    expect(screen.getByTestId("bob-gas-hint").textContent).toBe("A relayed send costs about 0.0012 ETC in gas.");
     await noAxeViolations(container);
   });
 
@@ -227,24 +226,18 @@ describe("pre-rendering", () => {
 });
 
 describe("skinnyCAT", () => {
-  test("the name, the Schrödinger line and the plain statement of what protects the funds", () => {
+  test("the name, and no hypertree jargon outside the explainer", () => {
     render(<App autoStart={false} />);
     expect(screen.getByTestId("wordmark").textContent).toBe("skinnyCAT");
     expect(screen.getByRole("link", { name: "skinnyCAT home" })).toBeTruthy();
-    expect(screen.getByTestId("schrodinger").textContent).toBe(
-      "Until a quantum computer looks, an ECDSA key is fine and broken at the same time. A leanSPHINCS key is just fine.",
-    );
-    expect(screen.getByTestId("definition").textContent).toMatch(/The cat is a quantum joke\. Hash-based signatures protect the funds/);
-    expect(document.getElementById("step-keys")?.textContent).toMatch(/2\s*30 times, more lives than any cat needs/);
     expect(document.body.textContent).not.toMatch(/hypertree/i);
   });
 
-  test("the cats nap until they have keys, and the art stays out of the accessibility tree", () => {
+  test("a cat wakes when it has a key, and the art stays out of the accessibility tree", () => {
     __setState({ keys: { alice: haveKey(0n), bob: initialState().keys.bob } });
     render(<App autoStart={false} />);
     expect(screen.getByTestId("alice-avatar").dataset.awake).toBe("1");
     expect(screen.getByTestId("bob-avatar").dataset.awake).toBeUndefined();
-    expect(screen.getByTestId("bob-napping").textContent).toBe("No key yet, so Bob is napping.");
     for (const svg of document.querySelectorAll("svg")) {
       const labelled = svg.closest("[role=img][aria-label], figure[aria-labelledby], figure[aria-label], figure[aria-describedby]");
       expect(svg.closest('[aria-hidden="true"]') || labelled, svg.outerHTML.slice(0, 120)).toBeTruthy();

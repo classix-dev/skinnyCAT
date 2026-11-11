@@ -63,7 +63,7 @@ describe("copy", () => {
     ...SCENES.flatMap((s) => [...s.body, ...s.steps, s.figure]),
     ...QUANTUM.cards.map((c) => c.body),
   ];
-  const eli5 = [ELI5_INTRO.lede, ...ELI5_SCENES.flatMap((s) => [s.body, ...s.steps, s.real, s.figure]), UI.toReal, UI.toRealBody, UI.seeReal, UI.toEli5];
+  const eli5 = [ELI5_INTRO.lede, ...ELI5_SCENES.flatMap((s) => [s.body, ...s.steps, s.real, s.figure]), UI.toReal, UI.seeReal, UI.toEli5];
   const banned = /\b(delve|realm|tapestry|leverage|robust|seamless|just|really|very|actually|basically|literally|quietly|genuinely|crucial)\b/i;
   const hedges = /\b(may|might|could|perhaps|potentially|probably|certainly|matters?|navigate|unlock|game-changer|revolutionize|comprehensive|holistic)\b/i;
 

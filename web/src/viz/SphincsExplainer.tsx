@@ -90,11 +90,7 @@ export function SphincsExplainer({ className, config }: { className?: string; co
     <VizConfigContext value={config ?? {}}>
       <div className={className} data-testid="sphincs-explainer">
         <header className="max-w-2xl pb-8 sm:pb-10">
-          <p className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-2.5 py-1 text-xs font-medium text-accent-hi ring-1 ring-accent/25 ring-inset">
-            <span className="size-1.5 rounded-full bg-cyan" aria-hidden />
-            {INTRO.kicker}
-          </p>
-          <h2 className="mt-4 text-[2rem] leading-[1.05] font-semibold tracking-[-0.04em] text-fg sm:text-[2.75rem]">{INTRO.title}</h2>
+          <h2 className="text-[2rem] leading-[1.05] font-semibold tracking-[-0.04em] text-fg sm:text-[2.75rem]">{INTRO.title}</h2>
           {INTRO.lede.map((p, i) => (
             <p key={i} className="mt-4 text-base leading-relaxed text-muted sm:text-lg">
               {rich(p)}

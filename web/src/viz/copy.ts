@@ -14,11 +14,9 @@ export interface SceneCopy {
 }
 
 export const INTRO = {
-  kicker: "Explainer",
   title: "How a leanSPHINCS Signature Works",
   lede: [
-    "A leanSPHINCS signature is built from one ingredient, the Keccak-256 hash that Ethereum Classic already runs. There is no elliptic curve inside it for a quantum computer to attack.",
-    "Every picture below is drawn from the bytes of one real signature. Sign your own message and they redraw from yours.",
+    "Built from one ingredient, the Keccak-256 hash ETC already runs. Every picture is drawn from a real signature, and redraws from yours if you sign a message.",
   ],
 };
 
@@ -29,7 +27,6 @@ export const SCENES: SceneCopy[] = [
     body: [
       "Keccak-256 takes any input and stirs it into 32 bytes. It runs 24 rounds over a state of 1,600 bits, and changing one letter of the input flips about half of the output bits.",
       "Running it forward takes a microsecond. Running it backward means guessing inputs until one fits. For the 16 bytes leanSPHINCS keeps, that is about 2^128 guesses.",
-      "Everything else on this page is this one function, run forward many times.",
     ],
     steps: [
       "Your text goes in as bytes, padded out to a 136-byte block.",
@@ -52,7 +49,7 @@ export const SCENES: SceneCopy[] = [
       "Three hashes lead to the end of the chain, which is part of the public key.",
       "To sign the digit 2, the signer reveals the value at position 2.",
       "The verifier hashes it once more and lands on the public end.",
-      "Stepping back down would mean reversing Keccak. Stepping up is free for anyone, and the next scene deals with that.",
+      "Stepping back down would mean reversing Keccak. Stepping up is free for anyone.",
     ],
     figure:
       "A chain of four boxes, positions 0 to 3, joined by hash arrows. Positions 0 and 1 stay locked. Position 2 is revealed and an arrow carries it to the public end at position 3.",

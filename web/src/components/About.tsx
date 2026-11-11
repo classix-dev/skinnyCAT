@@ -1,23 +1,13 @@
 import { LEDGER_SYMBOL } from "../generated/contracts";
-import type { ReactNode } from "react";
 import { A, LINKS } from "./ext";
 
-const LIMITS: [string, ReactNode][] = [
-  ["submitter", "The account that submits a transaction isn't quantum-secure. A quantum attacker who breaks it can spend its gas money and nothing else."],
+const LIMITS: [string, string][] = [
+  ["submitter", "The account that pays gas isn't quantum-secure. Breaking it gets only its gas money."],
   ["audit", "Nothing here is audited."],
-  [
-    "size",
-    <>
-      Each signature is 7,740 bytes, so a send costs about 290,000 gas, around 14 times a plain transfer. ETC can't{" "}
-      <a href="#aggregation" className="text-accent-hi underline decoration-accent-hi/40 underline-offset-2 hover:decoration-accent-hi">
-        aggregate
-      </a>{" "}
-      signatures yet.
-    </>,
-  ],
-  ["contract", `All ${LEDGER_SYMBOL} sits in one contract, so a bug there affects every holder.`],
-  ["final", `leanSPHINCS isn't final. A new version means a new verifier and a new ${LEDGER_SYMBOL}.`],
-  ["storage", "Keys live in this browser's local storage, which suits small amounts only."],
+  ["size", "A send costs about 290,000 gas, 14 times a plain transfer."],
+  ["contract", `All ${LEDGER_SYMBOL} sits in one contract, so a bug there hits every holder.`],
+  ["final", `leanSPHINCS isn't final. A new version means a new ${LEDGER_SYMBOL}.`],
+  ["storage", "Keys live in browser storage."],
 ];
 
 const SPEC: [string, string][] = [
@@ -52,8 +42,7 @@ export function About() {
           <A href={LINKS.ethlibCommit}>
             <span className="mono">dce7a2d</span>
           </A>
-          . We follow the current version because its authors stand behind it, it uses the FIPS 205 hash layout, and its
-          test vectors let us check our verifier and signer byte for byte.
+          , checked against its test vectors.
         </p>
         <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[13px]">
           {SPEC.map(([k, v]) => (

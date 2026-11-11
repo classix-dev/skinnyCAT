@@ -28,10 +28,7 @@ export function KeysStep() {
         )
       }
     >
-      <p className="mb-4 text-[13px] leading-relaxed text-muted">
-        Each key is made in this browser and lives only here. Its {LEDGER_SYMBOL} account is a hash of the public key, so no
-        ECDSA key controls it. One key signs up to 2<sup>30</sup> times, more lives than any cat needs.
-      </p>
+      <p className="mb-4 text-[13px] leading-relaxed text-muted">Keys are made and kept in this browser.</p>
       <div className="divide-y divide-white/[0.06] rounded-xl bg-ink-950/50 ring-1 ring-ink-700 ring-inset md:grid md:grid-cols-2 md:divide-x md:divide-y-0">
         <KeyPanel who="alice" />
         <KeyPanel who="bob" />
@@ -59,7 +56,6 @@ function KeyPanel({ who }: { who: Who }) {
         <h3 id={`${who}-title`} className="text-sm font-semibold text-fg">
           {NAMES[who]}
         </h3>
-        <span className="text-xs text-subtle">{who === "alice" ? "the well-fed one" : "the skinny stray"}</span>
         {slot.view === "have" && (
           <span className="ml-auto flex items-baseline gap-1 text-sm" aria-live="polite">
             <span className="font-semibold tabular-nums text-fg" data-testid={`${who}-balance`}>
@@ -93,9 +89,6 @@ function NoKey({ who }: { who: Who }) {
           Import Phrase
         </Button>
       </div>
-      <p className="text-xs text-subtle" data-testid={`${who}-napping`}>
-        No key yet, so {NAMES[who]} is napping.
-      </p>
       {error && <StatusLine tone="error">{error}</StatusLine>}
     </div>
   );
