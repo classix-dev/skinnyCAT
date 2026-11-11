@@ -3,49 +3,62 @@ import { renderToString } from "react-dom/server";
 import { describe, expect, test } from "vitest";
 import { FrameExplainer } from "./FrameExplainer";
 
-const frames = () => ["f1", "f2", "f3"].map((p) => screen.queryByTestId(`fx-${p}`)?.textContent ?? null).filter(Boolean) as string[];
+const rows = () => ["r1", "r2", "r3"].map((p) => screen.queryByTestId(`fx-${p}`)?.textContent ?? null).filter(Boolean) as string[];
 const caption = () => screen.getByTestId("fx-caption").textContent!;
 const next = () => act(() => fireEvent.click(screen.getByTestId("fx-next")));
+const mode = (m: string) => fireEvent.click(screen.getByTestId(`fx-mode-${m}`));
 
-describe("Frame transaction explainer", () => {
-  test("pre-renders the last step at rest, with Bob paying", () => {
+describe("Meta-transaction against frame transaction", () => {
+  test("pre-renders today's meta-transaction at its last step", () => {
     const html = renderToString(<FrameExplainer />).replace(/&#x27;/g, "'");
+    expect(html).toContain('data-mode="meta"');
     expect(html).toContain('data-step="6"');
-    expect(html).toContain("No relayer, no wrapped token, and no ECDSA key anywhere.");
-    expect(html).toContain("keccak256(0x06 ‖ rlp(tx))");
+    expect(html).toContain("needs a relayer, its ECDSA key, and Bob's money inside a wrapper");
   });
 
-  test("Bob pays: VERIFY then SENDER, and VERIFY approves execution and payment", () => {
+  test("today: a legacy transaction from the relayer, with Bob's signed message inside a call to scETC", () => {
     render(<FrameExplainer />);
-    const f = frames();
-    expect(f).toHaveLength(2);
-    expect(f[0]).toMatch(/VERIFY.*Bob's account.*approves execution and payment/);
-    expect(f[1]).toMatch(/SENDER.*Alice.*0\.1 ETC/);
-    expect(screen.getByTestId("fx-sig").textContent).toMatch(/ARBITRARY.*7,740 bytes/);
+    expect(screen.getByTestId("fx-tx").textContent).toMatch(/0x00, legacy/);
+    expect(screen.getByTestId("fx-sender").textContent).toBe("sender: the relayer");
+    const r = rows();
+    expect(r[0]).toMatch(/CALL.*scETC.*transfer/);
+    expect(r[1]).toMatch(/MESSAGE.*from Bob/);
+    expect(within(screen.getByTestId("fx-relayer")).getByText("pays gas")).toBeTruthy();
+    expect(screen.getByTestId("fx-hash").textContent).toMatch(/relayer signs the transaction with ECDSA/);
   });
 
-  test("a paymaster: Bob's VERIFY, then the paymaster's VERIFY for payment, then SENDER", () => {
+  test("sponsored frame transaction: Bob's VERIFY, the paymaster's VERIFY for payment, then SENDER, from Bob's account", () => {
     render(<FrameExplainer />);
-    fireEvent.click(screen.getByTestId("fx-mode-paymaster"));
+    mode("paymaster");
     expect(screen.getByTestId("fx-mode-paymaster").getAttribute("aria-pressed")).toBe("true");
-    const f = frames();
-    expect(f).toHaveLength(3);
-    expect(f[0]).toMatch(/VERIFY.*Bob's account.*approves execution$/);
-    expect(f[1]).toMatch(/VERIFY.*paymaster.*approves payment/);
-    expect(f[2]).toMatch(/SENDER.*Alice/);
+    expect(screen.getByTestId("fx-sender").textContent).toBe("sender: Bob's account");
+    const r = rows();
+    expect(r).toHaveLength(3);
+    expect(r[0]).toMatch(/VERIFY.*Bob's account.*approves execution$/);
+    expect(r[1]).toMatch(/VERIFY.*paymaster.*approves payment/);
+    expect(r[2]).toMatch(/SENDER.*Alice/);
+    expect(caption()).toMatch(/the job a relayer does today/);
   });
 
-  test("stepping lights each part, and the payer badge appears at APPROVE", () => {
+  test("the leanSPHINCS signature is marked the same in every mode", () => {
     render(<FrameExplainer />);
-    fireEvent.click(screen.getByTestId("fx-mode-self"));
-    // The mode switch restarts at step 1.
+    for (const m of ["meta", "paymaster", "self"]) {
+      mode(m);
+      expect(screen.getByTestId("fx-sig").textContent).toMatch(/leanSPHINCS|ARBITRARY/);
+      expect(screen.getByTestId("fx-same").textContent).toBe("same in all three");
+    }
+  });
+
+  test("Bob pays: stepping lights each part, and the payer badge appears at APPROVE", () => {
+    render(<FrameExplainer />);
+    mode("self");
     expect(screen.getByTestId("fx-caption").dataset.step).toBe("1");
     expect(within(screen.getByTestId("fx-bob")).queryByText("pays gas")).toBeNull();
     next();
-    expect(screen.getByTestId("fx-hash").textContent).toContain("signature bytes left out");
+    expect(screen.getByTestId("fx-hash").textContent).toContain("signature's bytes left out");
     next();
     expect(caption()).toMatch(/Frame 1, VERIFY/);
-    expect(screen.getByTestId("fx-f1").dataset.lit).toBe("1");
+    expect(screen.getByTestId("fx-r1").dataset.lit).toBe("1");
     expect(screen.getByTestId("fx-sig").dataset.lit).toBe("1");
     next();
     expect(caption()).toMatch(/APPROVE for execution and payment/);
@@ -56,6 +69,9 @@ describe("Frame transaction explainer", () => {
 
   test("the words follow the style guide", () => {
     const { container } = render(<FrameExplainer />);
-    expect(container.textContent).not.toMatch(/[—;]/);
+    for (const m of ["meta", "paymaster", "self"]) {
+      mode(m);
+      expect(container.textContent).not.toMatch(/[—;]/);
+    }
   });
 });

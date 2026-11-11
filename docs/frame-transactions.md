@@ -41,8 +41,12 @@ Frame transactions change what makes a transaction valid, so ETC would need an E
 
 ## Side by Side
 
+The signature and the contract that checks it stay the same. What changes is who signs the outer transaction, where Bob's money lives and who pays the gas.
+
 | | scETC today | frame transactions |
 |---|---|---|
+| Bob signs with | leanSPHINCS | leanSPHINCS |
+| signature checked by | the scETC contract | Bob's account, a contract |
 | fork needed | no | yes, an ECIP |
 | who submits | a relayer | anyone, or Bob |
 | ECDSA in the path | the relayer's key, gas money only | none |

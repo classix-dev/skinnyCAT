@@ -78,11 +78,12 @@ describe("empty page", () => {
     expect(items[15].querySelector(".sr-only")?.textContent).toBe(`${LEDGER_SYMBOL} to Bob's fresh address: sends 0.2 ETC.`);
   });
 
-  test("the comparison table has the six rows from the doc", () => {
+  test("the comparison table has what stays the same, then the six differences from the doc", () => {
     render(<App autoStart={false} />);
     const rows = within(screen.getByTestId("frames-table")).getAllByRole("row");
-    expect(rows).toHaveLength(7);
-    expect(rows[3].textContent).toBe("ECDSA in the paththe relayer's key, gas money onlynone");
+    expect(rows).toHaveLength(9);
+    expect(rows[1].textContent).toBe("Bob signs withleanSPHINCSleanSPHINCS");
+    expect(rows[5].textContent).toBe("ECDSA in the paththe relayer's key, gas money onlynone");
   });
 
   test("passes axe", async () => {

@@ -5,6 +5,8 @@ import { FrameExplainer } from "./FrameExplainer";
 // Copy from docs/frame-transactions.md, cut down. The explainer and a table over paragraphs.
 
 const ROWS: [string, string, string][] = [
+  ["Bob signs with", "leanSPHINCS", "leanSPHINCS"],
+  ["signature checked by", `the ${LEDGER_SYMBOL} contract`, "Bob's account, a contract"],
   ["fork needed", "no", "yes, an ECIP"],
   ["who submits", "a relayer", "anyone, or Bob"],
   ["ECDSA in the path", "the relayer's key, gas money only", "none"],
