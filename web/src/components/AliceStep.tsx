@@ -8,6 +8,7 @@ import { Button, Field, Spinner, StatusLine, cx, inputClass } from "./ui";
 function hint(s: State): string {
   if (!s.keys.alice.key) return "Create or import Alice's key first.";
   if (!s.keys.bob.key) return "Bob needs a key too, so Alice has someone to pay.";
+  if (s.deployed === false) return "Sending opens once the contracts are on mainnet. Sign Only works now.";
   if (!s.conn) return "Connect a browser wallet to send, or Sign Only to sign and check without sending.";
   return `One transaction. The ETC is deposited to Alice's key first, then her signed transfer moves ${LEDGER_SYMBOL} to Bob.`;
 }
@@ -62,7 +63,7 @@ export function AliceStep() {
           />
         </label>
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" variant="primary" disabled={!ready || !s.conn} data-testid="alice-go">
+          <Button type="submit" variant="primary" disabled={!ready || !s.conn || s.deployed === false} data-testid="alice-go">
             {busy && !run?.signOnly ? <Spinner className="size-4" /> : <Send className="size-4" aria-hidden />}
             Sign and Send
           </Button>

@@ -13,6 +13,7 @@ const RELAY_GAS = 300_000n;
 
 function hint(s: State): string {
   if (!s.keys.bob.key) return "Create or import Bob's key first.";
+  if (s.deployed === false) return "Relaying opens once the contracts are on mainnet. Sign Only works now.";
   if (!s.conn) return "Connect a browser wallet to relay, or Sign Only to sign and check without sending.";
   return "Bob signs here, and the cat courier (your browser wallet) submits it for the fee in ETC.";
 }
@@ -120,7 +121,7 @@ export function BobStep() {
           />
         </Field>
         <div className="flex flex-wrap gap-2">
-          <Button type="submit" variant="primary" disabled={!ready || !s.conn} data-testid="bob-go">
+          <Button type="submit" variant="primary" disabled={!ready || !s.conn || s.deployed === false} data-testid="bob-go">
             {busy && !run?.signOnly ? <Spinner className="size-4" /> : <Send className="size-4" aria-hidden />}
             Sign and Relay
           </Button>

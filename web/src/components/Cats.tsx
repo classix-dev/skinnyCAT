@@ -185,7 +185,8 @@ export function sceneOf(run: Run): Scene | null {
     failed("onchain") ||
     ["simulate", "sent", "confirmed"].some((id) => failed(id) && /BadSignature/.test(st(id)?.text ?? ""));
   if (rejected) return "shut";
-  if (st("onchain")?.state === "ok") return "open";
+  // Before the mainnet deploy a Sign Only run stops at the local check, so that one opens the box.
+  if (st("onchain")?.state === "ok" || (!st("onchain") && st("local")?.state === "ok")) return "open";
   if (st("local")?.state === "run" || st("local")?.state === "ok" || st("onchain")?.state === "run") return "verify";
   if (st("signature")?.state === "run") return "climb";
   return null;

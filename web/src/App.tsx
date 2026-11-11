@@ -13,6 +13,7 @@ import { HydrateNear } from "./components/HydrateNear";
 import { KeysStep } from "./components/KeysStep";
 import { RelayerStep } from "./components/RelayerStep";
 import { start, useApp } from "./store";
+import { LEDGER_SYMBOL } from "./generated/contracts";
 import { Explainer } from "./viz";
 
 // The two animated diagrams below the demo hydrate once they near the viewport, which keeps the
@@ -36,7 +37,7 @@ const LateAggregation = memo(function LateAggregation() {
 
 /** The whole page. Pre-rendered at build time, then hydrated. Browser-only work starts in the effect. */
 export function App({ autoStart = true }: { autoStart?: boolean }) {
-  const { live } = useApp();
+  const { live, deployed } = useApp();
   useEffect(() => {
     if (autoStart) start();
   }, [autoStart]);
@@ -56,6 +57,16 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
             <Hero />
             <div id="demo" className="scroll-mt-20 grid gap-4 md:grid-cols-2" data-testid="steps" data-live={live ? "1" : undefined}>
               <h2 className="sr-only">The Demo</h2>
+              {deployed === false && (
+                <p
+                  role="note"
+                  data-testid="predeploy"
+                  className="rounded-xl bg-warn/[0.06] px-4 py-3 text-[13px] leading-relaxed text-muted ring-1 ring-warn/25 ring-inset md:col-span-2"
+                >
+                  <span className="font-medium text-fg">The cats are still in the box.</span> {LEDGER_SYMBOL} isn't on Ethereum
+                  Classic mainnet yet. You can make keys and sign with Sign Only now. Sending opens once the contracts are deployed.
+                </p>
+              )}
               <KeysStep />
               <RelayerStep />
               <AliceStep />

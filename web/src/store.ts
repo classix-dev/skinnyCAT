@@ -95,6 +95,8 @@ export interface State {
   /** False in the pre-rendered HTML and until start() runs. */
   live: boolean;
   net: NetworkConfig;
+  /** Whether ${LEDGER_SYMBOL} has code on the network. Null until checked, after start(). */
+  deployed: boolean | null;
   selftest: { state: "run" | "ok" | "fail"; checks: Check[] };
   keys: Record<Who, Slot>;
   providers: Discovered[];
@@ -126,6 +128,7 @@ export function initialState(): State {
   return {
     live: false,
     net: NETWORK,
+    deployed: null,
     selftest: { state: "run", checks: [] },
     keys: { alice: emptySlot(), bob: emptySlot() },
     providers: [],
@@ -195,6 +198,24 @@ export function __reset() {
 // ---------------------------------------------------------------------------
 // Self-tests
 // ---------------------------------------------------------------------------
+
+// Before the mainnet deploy the page still works: keys, balances of zero and Sign Only, without the
+// on-chain steps. One getCode, shared by everything that reads the ledger.
+let deployedP: Promise<boolean> | null = null;
+function isDeployed(): Promise<boolean> {
+  deployedP ??= client()
+    .then((pc) => pc.getCode({ address: state.net.ledger }))
+    .then((code) => {
+      const d = !!code && code !== "0x";
+      set({ deployed: d });
+      return d;
+    })
+    .catch(() => {
+      deployedP = null;
+      return true;
+    });
+  return deployedP;
+}
 
 async function runSelfTests() {
   set({ selftest: { state: "run", checks: [] } });
@@ -282,6 +303,10 @@ async function refreshAccount(who: Who) {
   const a = state.keys[who].account;
   if (!a) return;
   try {
+    if (!(await isDeployed())) {
+      if (state.keys[who].account === a) setSlot(who, { balance: 0n, nonce: 0n, error: null });
+      return;
+    }
     const pc = await client();
     const [balance, nonce] = await Promise.all([
       pc.readContract({ address: state.net.ledger, abi: ledgerAbi, functionName: "balanceOf", args: [a] }),
@@ -419,6 +444,9 @@ export async function act(who: Who, signOnly: boolean) {
   const slot = state.keys[who];
   if (state.busy) return;
   if (!slot.key || !slot.seed || !slot.account) return formError(who, `Create or import ${NAMES[who]}'s key first.`);
+  const deployed = await isDeployed();
+  if (!signOnly && !deployed)
+    return formError(who, `${LEDGER_SYMBOL} isn't on Ethereum Classic yet, so there's nothing to send to. Sign Only works now.`);
   if (!signOnly && !conn) return formError(who, "Connect a browser wallet to submit. Or use Sign Only.");
   let plan: Plan;
   try {
@@ -428,7 +456,7 @@ export async function act(who: Who, signOnly: boolean) {
   }
   const { key: k, seed, account: from } = slot;
   const c = conn;
-  const ids = signOnly ? SIGN_ONLY_STEPS : STEPS.map(([id]) => id);
+  const ids = !deployed ? SIGN_ONLY_STEPS.filter((id) => id !== "onchain") : signOnly ? SIGN_ONLY_STEPS : STEPS.map(([id]) => id);
   const steps = STEPS.filter(([id]) => ids.includes(id)).map(([id, label]): Step => ({ id, label, state: "idle" }));
   set((s) => ({ busy: who, runs: { ...s.runs, [who]: { kind: plan.kind, signOnly, steps } } }));
   let current: StepId = "message";
@@ -438,10 +466,12 @@ export async function act(who: Who, signOnly: boolean) {
     const { ensureChain } = await web3Mod();
     // 1. Message
     step(who, "message", "run", { text: "reading the nonce" });
-    const [balance, nonce] = await Promise.all([
-      pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "balanceOf", args: [from] }),
-      pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "nonces", args: [from] }),
-    ]);
+    const [balance, nonce] = deployed
+      ? await Promise.all([
+          pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "balanceOf", args: [from] }),
+          pc.readContract({ address: n.ledger, abi: ledgerAbi, functionName: "nonces", args: [from] }),
+        ])
+      : [0n, 0n];
     setSlot(who, { balance, nonce });
     if (!signOnly) {
       const debit = plan.amount + plan.fee;
@@ -456,14 +486,18 @@ export async function act(who: Who, signOnly: boolean) {
     const p = { chainId: n.chainId, ledger: n.ledger, from, nonce, to: plan.to, amount: plan.amount, fee: plan.fee, deadline, memo: plan.memo };
     const msg = digest(plan.kind, p);
     const fn = plan.kind === "transfer" ? "transferDigest" : "withdrawDigest";
-    const onChain = await pc.readContract({
-      address: n.ledger,
-      abi: ledgerAbi,
-      functionName: fn,
-      args: [from, nonce, plan.to, plan.amount, plan.fee, deadline, plan.memo],
-    });
-    if (onChain !== msg) throw new Error(`${LEDGER_SYMBOL} computes ${onChain}, this page ${msg}.`);
-    step(who, "message", "ok", { value: msg, text: `nonce ${nonce}, matches ${fn}()` });
+    if (!deployed) {
+      step(who, "message", "ok", { value: msg, text: `nonce ${nonce}, ${LEDGER_SYMBOL} isn't deployed yet` });
+    } else {
+      const onChain = await pc.readContract({
+        address: n.ledger,
+        abi: ledgerAbi,
+        functionName: fn,
+        args: [from, nonce, plan.to, plan.amount, plan.fee, deadline, plan.memo],
+      });
+      if (onChain !== msg) throw new Error(`${LEDGER_SYMBOL} computes ${onChain}, this page ${msg}.`);
+      step(who, "message", "ok", { value: msg, text: `nonce ${nonce}, matches ${fn}()` });
+    }
 
     // 2. Signature
     current = "signature";
@@ -481,6 +515,11 @@ export async function act(who: Who, signOnly: boolean) {
     step(who, "local", "run", { text: "JavaScript verifier" });
     if ((await verifyLocal(k.publicKey, msg, signature)) !== true) throw new Error("The JavaScript verifier rejected the signature.");
     step(who, "local", "ok", { text: "valid in JavaScript" });
+
+    if (!deployed) {
+      patchRun(who, { signed: { digest: msg, signature } });
+      return;
+    }
 
     // 4. On-chain verify
     current = "onchain";
@@ -580,6 +619,7 @@ export function start() {
     const seed = loadSeed(who);
     if (seed) void loadKey(who, seed);
   }
+  void isDeployed();
   void runSelfTests();
   void refreshGasBalance();
 

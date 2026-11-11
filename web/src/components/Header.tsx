@@ -1,5 +1,5 @@
 import * as Popover from "@radix-ui/react-popover";
-import { Check, ShieldCheck, ShieldX, Wallet, X } from "lucide-react";
+import { Check, Clock, ShieldCheck, ShieldX, Wallet, X } from "lucide-react";
 import { short } from "../lib/format";
 import { quickConnect, useApp } from "../store";
 import { APP_NAME, Wordmark } from "./Brand";
@@ -31,10 +31,12 @@ export function Header() {
 }
 
 function SelfTestPill() {
-  const { selftest, net } = useApp();
+  const { selftest, net, deployed } = useApp();
   const n = selftest.checks.length;
   const failed = selftest.checks.filter((c) => !c.ok);
-  const label = selftest.state === "run" ? "Checking" : selftest.state === "ok" ? `Verified ${n}/${n}` : `${failed.length} failed`;
+  // Before the mainnet deploy the on-chain checks can't pass, so the pill says so instead of failing.
+  const pending = deployed === false && selftest.state !== "run";
+  const label = selftest.state === "run" ? "Checking" : pending ? "Not on mainnet yet" : selftest.state === "ok" ? `Verified ${n}/${n}` : `${failed.length} failed`;
   return (
     <Popover.Root>
       <Popover.Trigger
@@ -43,18 +45,20 @@ function SelfTestPill() {
         aria-label={`Self-tests, ${label}`}
         className={cx(
           "inline-flex h-7 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs font-medium ring-1 ring-inset transition-colors",
-          selftest.state === "fail" ? "bg-bad/10 text-bad ring-bad/30 hover:bg-bad/15" : "bg-white/[0.04] text-muted ring-ink-600 hover:text-fg",
+          selftest.state === "fail" && !pending ? "bg-bad/10 text-bad ring-bad/30 hover:bg-bad/15" : "bg-white/[0.04] text-muted ring-ink-600 hover:text-fg",
         )}
       >
         {selftest.state === "run" ? (
           <Spinner className="size-3" />
+        ) : pending ? (
+          <Clock className="size-3.5 text-warn" aria-hidden />
         ) : selftest.state === "ok" ? (
           <ShieldCheck className="size-3.5 text-cyan" aria-hidden />
         ) : (
           <ShieldX className="size-3.5" aria-hidden />
         )}
         <span data-testid="selftest-label">
-          <span className="sm:hidden">{selftest.state === "ok" ? `${n}/${n}` : selftest.state === "fail" ? `${failed.length}` : ""}</span>
+          <span className="sm:hidden">{pending ? "" : selftest.state === "ok" ? `${n}/${n}` : selftest.state === "fail" ? `${failed.length}` : ""}</span>
           <span className="hidden sm:inline">{label}</span>
         </span>
       </Popover.Trigger>
@@ -68,6 +72,11 @@ function SelfTestPill() {
           <p className="mt-0.5 text-xs text-muted">
             Run on load against {net.name}, chain {net.chainId}.
           </p>
+          {pending && (
+            <p className="mt-2 text-xs text-warn" data-testid="selftest-pending">
+              The contracts aren't on mainnet yet, so the on-chain checks fail for now. The local ones still run.
+            </p>
+          )}
           <ul className="mt-3 space-y-2" data-testid="selftest-list">
             {selftest.checks.map((c) => (
               <li key={c.name} className="flex items-start gap-2">
