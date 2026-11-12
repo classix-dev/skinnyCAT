@@ -1,7 +1,7 @@
 {
   "name": "skinnyCAT",
   "short_name": "skinnyCAT",
-  "description": "skinnyCAT, an educational demo of quantum-secure payments on Ethereum Classic, not a production app. By Classix.",
+  "description": "skinnyCAT, an educational demo of quantum-safe payments on Ethereum Classic, not a production app. By Classix.",
   "start_url": "/",
   "display": "browser",
   "background_color": "#03050c",

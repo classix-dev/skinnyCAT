@@ -37,8 +37,8 @@
    "amount": "400000000000000000",
    "fee": "0",
    "deadline": "1800000000",
-   "memo": "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
-   "digest": "0x5ce9a7d93684b95a1565961f6a0edb17678d1d4774932ea9c7c75ffd61552522"
+   "memo": "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev",
+   "digest": "0x10b06bcf3e70716b02db8dbe11ea4c02c7d968a9caa3cffa47afe51fcb30a4ce"
   },
   {
    "kind": "withdraw",
@@ -48,8 +48,8 @@
    "amount": "400000000000000000",
    "fee": "0",
    "deadline": "1800000000",
-   "memo": "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
-   "digest": "0xca43dbcdc1474f092e13121bbf6cbb5471ec4cbb4f5e1c92a2cfd74527ac1536"
+   "memo": "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev",
+   "digest": "0xcb8f6ad1359b1b37f9d12a818fda6fc57205ae83907ede640854a1ed99e53533"
   },
   {
    "kind": "transfer",

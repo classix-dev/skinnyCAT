@@ -40,13 +40,13 @@ describe("empty page", () => {
   test("headline, what it is, the notice, and nothing calls it a wallet", () => {
     render(<App autoStart={false} />);
     const h1 = screen.getByRole("heading", { level: 1 });
-    expect(h1.textContent).toBe("Quantum-Secure Payments on Ethereum Classic");
+    expect(h1.textContent).toBe("Quantum-Safe Payments on Ethereum Classic");
     expect(h1.textContent).not.toMatch(/wallet/i);
     expect(screen.getByTestId("lead").textContent).toMatch(/skinnyCAT moves ETC with a leanSPHINCS signature, which a quantum computer can't forge/);
     expect(screen.getByTestId("disclaimer").textContent).toMatch(/educational demo, not a production app. It isn't audited, so use tiny amounts/i);
     for (const name of ["Two Cats, Two Keys", "Browser Wallet", "Alice Deposits and Pays Bob", "Bob Pays Back Without ETC", "How It Works", "Frame Transactions Instead of Meta-Transactions", "Current Limitations", "The Spec"])
       expect(screen.getByRole("heading", { name })).toBeTruthy();
-    expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev");
+    expect(screen.getByTestId("alice-memo")).toHaveProperty("value", "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev");
     expect(screen.getByTestId("alice-go")).toHaveProperty("disabled", true);
     expect(screen.getByTestId("alice-sign-only")).toHaveProperty("disabled", true);
     expect(screen.getByTestId("alice-hint").textContent).toBe("Create or import Alice's key first.");
@@ -180,7 +180,7 @@ describe("runs", () => {
   });
 
   test("the receipt shows the memo and links Blockscout", async () => {
-    const memo = "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev";
+    const memo = "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev";
     const all = Object.fromEntries(STEPS.map(([id]) => [id, ["ok", id === "explorer" ? "etc.blockscout.com" : "done"]])) as never;
     const r = run(all, { receipt: { memo, href: "https://etc.blockscout.com/tx/0xabc", fee: null } });
     r.steps = r.steps.map((x) => (x.id === "explorer" ? { ...x, href: "https://etc.blockscout.com/tx/0xabc" } : x));

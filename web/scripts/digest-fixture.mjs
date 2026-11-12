@@ -16,7 +16,7 @@ const h = (s) => keccak256(stringToHex(s));
 const addr = (s) => `0x${h(s).slice(26)}`;
 const MAX = 2n ** 256n - 1n;
 const memos = [
-  "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev",
+  "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev",
   "",
   "thanks",
   "Grüße 🔐, \"quoted\" and\nnew line",

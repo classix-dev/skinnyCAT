@@ -190,7 +190,7 @@ describe("act", () => {
     expect(run.steps.every((x) => x.state === "ok")).toBe(true);
     expect(chain.sent).toHaveLength(1);
     expect(chain.sent[0].value).toBe(10n ** 16n);
-    expect(run.receipt?.memo).toBe("The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev");
+    expect(run.receipt?.memo).toBe("The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev");
     expect(run.receipt?.href).toMatch(/^https:\/\/etc\.blockscout\.com\/tx\/0x7777/);
     expect(s().busy).toBeNull();
   });

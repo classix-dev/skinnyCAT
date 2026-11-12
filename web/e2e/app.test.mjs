@@ -22,7 +22,7 @@ mkdirSync(SHOTS, { recursive: true });
 
 // anvil's default account 1 is the browser wallet. Account 0 deployed the contracts.
 const RELAYER = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8";
-const MEMO = "The first payment using a quantum-secure signature on Ethereum Classic, by Classix.dev";
+const MEMO = "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev";
 const FRESH = `0x${[...crypto.getRandomValues(new Uint8Array(20))].map((b) => b.toString(16).padStart(2, "0")).join("")}`;
 
 const abi = parseAbi([
@@ -499,7 +499,7 @@ try {
     const ctx = await browser.newContext({ viewport: DESKTOP, javaScriptEnabled: false });
     const page = await ctx.newPage();
     await page.goto(APP);
-    check((await page.textContent("h1")) === "Quantum-Secure Payments on Ethereum Classic", "no-JS: h1 is there");
+    check((await page.textContent("h1")) === "Quantum-Safe Payments on Ethereum Classic", "no-JS: h1 is there");
     for (const id of ["disclaimer", "how", "frames", "agg", "limits", "spec", "credits"]) check(await page.isVisible(tid(id)), `no-JS: ${id} visible`);
     await page.screenshot({ path: `${SHOTS}desktop-0-no-js.png`, fullPage: true });
     await ctx.close();

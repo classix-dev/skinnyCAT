@@ -19,7 +19,7 @@ export function Hero() {
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-center lg:gap-x-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
       <div>
         <h1 className="text-[2.4rem] leading-[1.04] font-semibold tracking-[-0.04em] text-fg sm:text-5xl lg:text-[3.4rem]">
-          <span className="bg-gradient-to-r from-accent-hi via-cyan to-accent-hi bg-clip-text text-transparent">Quantum-Secure</span>{" "}
+          <span className="bg-gradient-to-r from-accent-hi via-cyan to-accent-hi bg-clip-text text-transparent">Quantum-Safe</span>{" "}
           Payments on Ethereum Classic
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg" data-testid="lead">

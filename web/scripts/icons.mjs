@@ -74,7 +74,7 @@ p{margin:26px 0 0;font-size:38px;line-height:1.2;color:#c9d6ff;letter-spacing:-.
 <div class="og"><div class="grid"></div>
 <div class="mark">${markSvg(440)}</div>
 <div class="text"><h1>skinny<b>CAT</b></h1>
-<p>Quantum-secure payments on Ethereum Classic</p>
+<p>Quantum-safe payments on Ethereum Classic</p>
 <div class="small">leanSPHINCS, hash-based signatures<br>made in your browser</div></div>
 <div class="foot">An educational demo by Classix · <span>not a production app</span></div>
 </div>`;

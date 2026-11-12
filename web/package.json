@@ -2,7 +2,7 @@
   "name": "skinnycat",
   "version": "0.1.0",
   "private": true,
-  "description": "skinnycat.classix.dev, an educational demo of quantum-secure payments on Ethereum Classic with leanSPHINCS keys in the browser, not a production app",
+  "description": "skinnycat.classix.dev, an educational demo of quantum-safe payments on Ethereum Classic with leanSPHINCS keys in the browser, not a production app",
   "type": "module",
   "scripts": {
     "gen": "node scripts/gen-contracts.mjs && node scripts/extract-vectors.mjs",

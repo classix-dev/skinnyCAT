@@ -2,7 +2,7 @@ import { LEDGER_SYMBOL } from "../generated/contracts";
 import { A, LINKS } from "./ext";
 
 const LIMITS: [string, string][] = [
-  ["submitter", "The account that pays gas isn't quantum-secure. Breaking it gets only its gas money."],
+  ["submitter", "The account that pays gas isn't quantum-safe. Breaking it gets only its gas money."],
   ["audit", "Nothing here is audited."],
   ["size", "A send costs about 290,000 gas, 14 times a plain transfer."],
   ["contract", `All ${LEDGER_SYMBOL} sits in one contract, so a bug there hits every holder.`],

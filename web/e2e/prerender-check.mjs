@@ -18,7 +18,7 @@ check(!html.includes("<!--app-html-->"), "placeholder replaced");
 const title = html.match(/<title>(.*?)<\/title>/)?.[1] ?? "";
 check(!/wallet/i.test(title), `title doesn't say wallet: ${title}`);
 const h1 = root.match(/<h1[^>]*>([\s\S]*?)<\/h1>/)?.[1]?.replace(/<[^>]+>/g, "") ?? "";
-check(h1 === "Quantum-Secure Payments on Ethereum Classic", `h1: ${h1}`);
+check(h1 === "Quantum-Safe Payments on Ethereum Classic", `h1: ${h1}`);
 check(!/wallet/i.test(h1), "h1 doesn't say wallet");
 for (const s of [
   "skinnyCAT moves ETC with a leanSPHINCS signature, which a quantum computer can&#x27;t forge.",

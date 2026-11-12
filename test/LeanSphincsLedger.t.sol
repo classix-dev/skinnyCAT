@@ -12,7 +12,7 @@ import {LeanSphincsLedger} from "../src/LeanSphincsLedger.sol";
 /// withdraw to a fresh address that never held ETC. Signatures come from the TypeScript signer
 /// over FFI, a few seconds each.
 contract LeanSphincsLedgerTest is LeanSphincsFFI {
-    string constant MEMO = "The first quantum-secure transaction on Ethereum Classic, by Classix.dev";
+    string constant MEMO = "The first quantum-safe transaction on Ethereum Classic, by Classix.dev";
 
     LeanSphincsLedger ledger;
 
