@@ -85,7 +85,7 @@ export function KeyDegradation() {
       </h2>
       <div className="mt-2 max-w-2xl space-y-3 text-[15px] leading-relaxed text-muted">
         <p>
-          A leanSPHINCS key wears out. Each signature opens one secret leaf in each of 24 FORS trees. The key keeps no
+          A leanSPHINCS key wears out. Each signature opens one secret leaf in each of the 24 trees of a FORS, a Forest of Random Subsets. The key keeps no
           state, so the message picks which of its 67 million FORS instances signs, and over time instances get picked
           again and open more leaves. Once enough are open, a forger can sign.
         </p>

@@ -1,6 +1,7 @@
 // The "Like I'm Five" explainer. Six short scenes, each a sentence, an animated picture in the
 // detailed explainer's frame, and a line saying what it stands for. One link at the end opens the
 // detailed version. All the words render on the server.
+import { WhyLean } from "../WhyLean";
 import { ArrowRight } from "lucide-react";
 import type { ComponentType } from "react";
 import { rich } from "../rich";
@@ -72,6 +73,7 @@ export function Eli5Explainer({ onSeeReal }: { onSeeReal: SeeReal }) {
       <header className="max-w-3xl pb-6 sm:pb-8">
         <h2 className="text-[2rem] leading-[1.05] font-semibold tracking-[-0.04em] text-fg sm:text-[2.75rem]">{ELI5_INTRO.title}</h2>
         <p className="mt-4 text-base leading-relaxed text-muted sm:text-lg">{ELI5_INTRO.lede}</p>
+        <WhyLean />
       </header>
       {ELI5_SCENES.map((s) => (
         <Eli5Section key={s.id} copy={s} />

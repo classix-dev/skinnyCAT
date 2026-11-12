@@ -1,5 +1,6 @@
 // The explainer's shell. It renders every heading, paragraph and step list on the server, and
 // loads each animated scene as its own chunk when it comes near the viewport.
+import { WhyLean } from "./WhyLean";
 import { lazy, Suspense, useEffect, useRef, useState, type ComponentType, type LazyExoticComponent } from "react";
 import { CREDITS, INTRO, QUANTUM, SCENES, type SceneCopy, type SceneId } from "./copy";
 import { useInView } from "./hooks";
@@ -96,6 +97,7 @@ export function SphincsExplainer({ className, config }: { className?: string; co
               {rich(p)}
             </p>
           ))}
+          <WhyLean />
         </header>
         <WhenNear fallback={<div className="h-[13.5rem] rounded-2xl bg-ink-900/70 ring-1 ring-white/[0.07] ring-inset" />} minH="min-h-[13.5rem]">
           <SamplePanel />

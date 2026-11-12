@@ -94,7 +94,7 @@ export const SCENES: SceneCopy[] = [
     id: "fors",
     title: "FORS Signs the Message",
     body: [
-      "The message itself is signed by FORS, a few-time signature. It has 24 trees with 1,024 secret leaves each.",
+      "The message itself is signed by FORS, short for Forest of Random Subsets, a few-time signature. It has 24 trees with 1,024 secret leaves each.",
       "A hash of the message gives 24 numbers from 0 to 1,023. Each picks one leaf to reveal, along with the 10 siblings up to its tree's root, and the 24 roots hash into one FORS public key.",
       "To forge, someone would need a different message whose 24 picks all land on leaves that are already public.",
     ],

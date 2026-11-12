@@ -1,10 +1,10 @@
 # skinnyCAT
 
-Quantum-secure payments on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Make a key in your browser at [skinnycat.classix.dev](https://skinnycat.classix.dev), deposit ETC to it, and only that key can spend it. We're using it to make the first quantum-secure signature on Ethereum Classic.
+Quantum-safe payments on Ethereum Classic, signed with leanSPHINCS, a stateless hash-based signature from the SPHINCS+ family. Make a key in your browser at [skinnycat.classix.dev](https://skinnycat.classix.dev), deposit ETC to it, and only that key can spend it. We're using it to make the first quantum-safe signature on Ethereum Classic.
 
 skinnyCAT is an educational demo, not a production app. Nothing here is audited, so don't put in more ETC than you're happy to lose.
 
-Quantum-secure here means a quantum computer can't spend the funds. The gas is still paid by an ordinary account, which only risks its own gas money (see [Current Limitations](#current-limitations)).
+Quantum-safe here means a quantum computer can't spend the funds. The gas is still paid by an ordinary account, which only risks its own gas money (see [Current Limitations](#current-limitations)).
 
 We say first signature, not first transaction. Funds locked to a hash preimage, as in a hashed timelock contract, are also out of a quantum computer's reach, and ETC has very likely seen those already. What we think is new is a post-quantum signature verified on ETC.
 
@@ -65,7 +65,7 @@ We use leanSPHINCS as [EthLib](https://github.com/ethereum/EthLib) specifies it 
 | | |
 |---|---|
 | hash | Keccak-256 truncated to 16 bytes, in the hash layout of FIPS 205 (SLH-DSA) |
-| structure | FORS (24 trees of height 10) under a three-layer hypertree (8 + 8 + 10 from the bottom) with WOTS+C one-time keys |
+| structure | FORS, a Forest of Random Subsets (24 trees of height 10) under a three-layer hypertree (8 + 8 + 10 from the bottom) with WOTS+C one-time keys |
 | public key | 32 bytes, `PK.seed ‖ PK.root` |
 | signature | 7,740 bytes |
 | lifetime | 2^30 signatures per key, no state kept by the signer |
@@ -99,7 +99,7 @@ Its proof gives 127 bits up to 1,182,000,000 signatures. Standard SLH-DSA is siz
 
 ## Current Limitations
 
-The funds are quantum-secure, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move scETC, change the call, or replay the signature, because the contract checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
+The funds are quantum-safe, but the account that submits the transaction isn't. ETC has no way for a contract to pay its own gas, so an ordinary ECDSA account has to submit every call and pay for it. A quantum attacker who breaks that account can spend its gas money and nothing else. They can't move scETC, change the call, or replay the signature, because the contract checks the leanSPHINCS signature over all of it. They could only delay a call by refusing to submit it, and anyone else can submit it.
 
 Ethereum's answer is the frame transaction, [EIP-8141](https://eips.ethereum.org/EIPS/eip-8141), a draft from 2026-01-29 with transaction type `0x06`. Its abstract says it
 
@@ -158,4 +158,6 @@ This builds on other people's work.
 - [SPHINCS-](https://github.com/nconsigny/SPHINCS-) by Nicolas Consigny (MIT). Our verifier follows the structure of its leanSPHINCS verifier, and its [write-up on ethresear.ch](https://ethresear.ch/t/sphincs-minus-efficient-stateless-post-quantum-signature-verification-on-the-evm/25165) covers the EVM side.
 - [Devcon_Workshop](https://github.com/alessandrobaiocchi/Devcon_Workshop) by Alessandro Baiocchi, the Devcon 8 workshop that sends a leanSPHINCS-signed transaction on the Daisugi testnet. skinnycat.classix.dev follows its flow. Its verifier is `SphincsVerifier_v2` from [RivaLabs-Core/Post-Quantum-AA-Infra](https://github.com/RivaLabs-Core/Post-Quantum-AA-Infra/blob/6078fd9306be250dfd12d3b9e57c56688b856a85/src/Verifiers/SphincsVerifier_v2.sol) at commit `6078fd93`.
 - [SPHINCS Playground](https://sphincs-playground.vercel.app) by Project Eleven, "a gamified explainer of SPHINCS+ and SPHINCS G few-time signatures", shown at the Devcon 8 workshop [leanSPHINCS for Developers](https://app.devcon.org/schedule/leansphincs-for-developers-how-to-build-on-post-quantum-ethereum) on 2026-11-05.
+- [SPHINCS+: Stateless Hash-Based Digital Signature](https://www.telsy.com/en/sphincs-stateless-hash-based-digital-signature/) by Telsy, a walk through FORS (Forest of Random Subsets) and the hypertree, linked from the explainer.
+- The Devcon 8 recordings linked under the explainer, [Post-Quantum Transition](https://www.youtube.com/watch?v=rqJ5ir-8hAQ), [PQ Ethereum Q&A](https://www.youtube.com/watch?v=BA1Vpoq1Y6o), [leanSPHINCS: Signing for the Long Run](https://www.youtube.com/watch?v=Bu_u9FUqFaA) and [leanSPHINCS for Developers](https://www.youtube.com/watch?v=-DZ-jEntxV8).
 - The [leanSphincs](https://github.com/leanEthereum/leanSphincs) competition from the Lean Ethereum project.
