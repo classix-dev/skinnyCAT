@@ -5,6 +5,7 @@ import { Aggregation } from "./components/Aggregation";
 import { AliceStep } from "./components/AliceStep";
 import { BobStep } from "./components/BobStep";
 import { Footer } from "./components/Footer";
+import { FirstPayment } from "./components/FirstPayment";
 import { FrameTransactions } from "./components/FrameTransactions";
 import { Header } from "./components/Header";
 import { Hero } from "./components/Hero";
@@ -57,6 +58,7 @@ export function App({ autoStart = true }: { autoStart?: boolean }) {
         <main className="mx-auto max-w-6xl px-4 pt-10 sm:px-6 sm:pt-14 lg:pt-20">
           <div className="flex flex-col gap-10 sm:gap-12">
             <Hero />
+            <FirstPayment />
             <Toc />
             <div id="demo" className="scroll-mt-20 grid gap-4 md:grid-cols-2" data-testid="steps" data-live={live ? "1" : undefined}>
               <h2 className="sr-only">The Demo</h2>
