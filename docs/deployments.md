@@ -23,4 +23,12 @@ The source isn't verified on Blockscout yet, since that publishes the code.
 
 ## First Payment
 
-Not sent yet.
+Sent from skinnycat.classix.dev on 2026-11-16, relayed and paid for by the browser wallet `0x1f546DB9C440818715Ac689f0EBF9F618f5928D7`. Alice's scETC account is `0x849087b169f70ecbb3c29859ded187f6179a5cad` and Bob's is `0x3dcab726fad5f6bc2f004aa83e55757f5084f65f`.
+
+| step | transaction | block | time (UTC) | gas used |
+|---|---|---|---|---|
+| Alice deposits 0.01 ETC and sends Bob 0.004 scETC, memo "The first payment using a quantum-safe signature on Ethereum Classic, by Classix.dev" | [`0x120ca292…c4ad`](https://etc.blockscout.com/tx/0x120ca292224e17de96101e2ff3f34966a9e601001cc2519a73219bbbf055c4ad) | 25,742,237 | 00:52:16 | 337,467 |
+| Bob sends Alice 0.001 scETC for a 0.0015 ETC fee to the relayer, memo "Code is Law" | [`0x22cbcb0c…fa5e`](https://etc.blockscout.com/tx/0x22cbcb0c898ac5a344fe1745bfe194f4e5b83947373318f09e22c88c0c20fa5e) | 25,742,244 | 00:53:18 | 292,748 |
+| Bob withdraws 0.0001 ETC to `0x06e909c2Ad640400D0Bf66c32a7310E6af5FC400` for a 0.00001 ETC fee | [`0xdf35e65f…9c08`](https://etc.blockscout.com/tx/0xdf35e65fb5774a9e7eaaafa07e47dcb21ee45b98a2fb14c64b334b1446e69c08) | 25,742,255 | 00:55:29 | 302,407 |
+
+Afterwards Alice holds 0.007 scETC and Bob 0.00139, and the contract holds 0.00839 ETC, equal to the scETC supply.
