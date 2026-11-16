@@ -1,20 +1,23 @@
-import { FlaskConical } from "lucide-react";
-import { useApp, type State } from "../store";
+import { FlaskConical, Newspaper } from "lucide-react";
+import { useAppSel, type State } from "../store";
 import { HashTree } from "./Brand";
 import { GitHubMark, LINKS } from "./ext";
 
-/** How far up the tree the cat is. It climbs while a key is derived or a signature is made, and rests on the root. */
-function climb(s: State): { t: number; moving: boolean } {
-  const key = s.keys.alice.view === "busy" ? s.keys.alice : s.keys.bob.view === "busy" ? s.keys.bob : null;
-  if (key) return { t: key.progress, moving: true };
+/**
+ * How far up the tree the cat is, or 1 when it rests on the root. It climbs while a signature is
+ * made. Key derivation stays inside its own card and doesn't move the cat.
+ */
+function climb(s: State): number {
   const sig = s.busy ? s.runs[s.busy]?.steps.find((x) => x.id === "signature") : undefined;
-  if (sig?.state === "run") return { t: sig.progress ?? 0, moving: true };
-  return { t: 1, moving: false };
+  return sig?.state === "run" ? Math.min(sig.progress ?? 0, 0.999) : 1;
 }
 
+const heroButton =
+  "inline-flex h-9 items-center gap-2 rounded-lg bg-white/[0.04] px-3.5 text-sm font-medium text-fg ring-1 ring-ink-600 ring-inset transition-colors hover:bg-white/[0.08]";
+
 export function Hero() {
-  const s = useApp();
-  const { t, moving } = climb(s);
+  const t = useAppSel(climb);
+  const moving = t < 1;
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-center lg:gap-x-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,26rem)]">
       <div>
@@ -38,16 +41,23 @@ export function Hero() {
           <FlaskConical className="size-4 shrink-0 text-warn" aria-hidden />
           An educational demo, not a production app. It isn't audited, so use tiny amounts.
         </p>
-        <a
-          href={LINKS.repo}
-          target="_blank"
-          rel="noopener noreferrer"
-          data-testid="hero-github"
-          className="mt-5 inline-flex h-9 items-center gap-2 rounded-lg bg-white/[0.04] px-3.5 text-sm font-medium text-fg ring-1 ring-ink-600 ring-inset transition-colors hover:bg-white/[0.08]"
-        >
-          <GitHubMark className="size-4" />
-          Source on GitHub
-        </a>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <a href={LINKS.repo} target="_blank" rel="noopener noreferrer" data-testid="hero-github" className={heroButton}>
+            <GitHubMark className="size-4" />
+            Source on GitHub
+          </a>
+          <a
+            href={LINKS.post}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="hero-post"
+            title="The First Payment Using a Quantum-Safe Signature on Ethereum Classic"
+            className={heroButton}
+          >
+            <Newspaper className="size-4" aria-hidden />
+            Read the Blog Post
+          </a>
+        </div>
       </div>
       <div className="hidden w-full lg:block" style={{ aspectRatio: "320 / 248" }}>
         <HashTree t={t} moving={moving} className="w-full" />

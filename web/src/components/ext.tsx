@@ -21,6 +21,7 @@ export const LINKS = {
   workshop: "https://github.com/alessandrobaiocchi/Devcon_Workshop",
   playground: "https://sphincs-playground.vercel.app",
   repo: "https://github.com/classix-dev/skinnyCAT",
+  post: "https://classix.dev/skinnycat",
   ethlibCommit: "https://github.com/ethereum/EthLib/commit/dce7a2de23a973d84eac38126a1527763cd3465d",
   ethlib: "https://github.com/ethereum/EthLib",
   sphincsArt: "https://sphincs.art",

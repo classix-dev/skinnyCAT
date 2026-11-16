@@ -15,7 +15,7 @@ import { KeyDegradation } from "./components/KeyDegradation";
 import { KeysStep } from "./components/KeysStep";
 import { RelayerStep } from "./components/RelayerStep";
 import { Toc } from "./components/Toc";
-import { start, useApp } from "./store";
+import { start, useAppSel } from "./store";
 import { LEDGER_SYMBOL } from "./generated/contracts";
 import { Explainer } from "./viz";
 
@@ -40,7 +40,9 @@ const LateAggregation = memo(function LateAggregation() {
 
 /** The whole page. Pre-rendered at build time, then hydrated. Browser-only work starts in the effect. */
 export function App({ autoStart = true }: { autoStart?: boolean }) {
-  const { live, deployed } = useApp();
+  // Two slices only, so a state change elsewhere doesn't re-render the whole page.
+  const live = useAppSel((s) => s.live);
+  const deployed = useAppSel((s) => s.deployed);
   useEffect(() => {
     if (autoStart) start();
   }, [autoStart]);

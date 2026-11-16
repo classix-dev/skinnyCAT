@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { LEDGER_SYMBOL } from "../generated/contracts";
 import { NAMES, seedToPhrase, type Who } from "../key";
 import { fmt } from "../lib/format";
-import { accountUrl, cancelImport, createKey, disarmImport, forgetKey, importPhrase, openImport, refreshAll, useApp } from "../store";
+import { accountUrl, cancelImport, createKey, disarmImport, forgetKey, importPhrase, openImport, refreshAll, useApp, useKeyProgress } from "../store";
 import { CatAvatar } from "./Cats";
 import { Row, StepCard } from "./StepCard";
 import { Button, CopyButton, HexValue, Progress, StatusLine, Tip, cx, inputClass } from "./ui";
@@ -68,7 +68,7 @@ function KeyPanel({ who }: { who: Who }) {
       <div className="mt-3">
         {slot.view === "none" && <NoKey who={who} />}
         {slot.view === "import" && <ImportForm who={who} />}
-        {slot.view === "busy" && <Busy who={who} progress={slot.progress} />}
+        {slot.view === "busy" && <Busy who={who} />}
         {slot.view === "have" && <HaveKey who={who} />}
       </div>
     </section>
@@ -142,7 +142,8 @@ function ImportForm({ who }: { who: Who }) {
   );
 }
 
-function Busy({ who, progress }: { who: Who; progress: number }) {
+function Busy({ who }: { who: Who }) {
+  const progress = useKeyProgress(who);
   return (
     <div className="space-y-2" data-testid={`${who}-busy`}>
       <div className="flex items-baseline justify-between text-[13px]">

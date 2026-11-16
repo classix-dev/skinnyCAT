@@ -163,6 +163,33 @@ function subscribe(l: () => void) {
 }
 
 export const useApp = () => useSyncExternalStore(subscribe, get, getServer);
+
+/** One slice of the state. Re-renders only when the selected value changes, so pick a primitive. */
+export function useAppSel<T>(sel: (s: State) => T): T {
+  return useSyncExternalStore(subscribe, () => sel(state), () => sel(SERVER_STATE));
+}
+
+// Key derivation progress ticks many times a second. It lives outside the state, so a tick
+// re-renders only the card showing it, not every component that reads the state.
+const keyProgress = new Map<Who, number>();
+const progressListeners = new Set<() => void>();
+function setKeyProgress(who: Who, v: number | null) {
+  if (v === null) keyProgress.delete(who);
+  else keyProgress.set(who, v);
+  for (const l of progressListeners) l();
+}
+function subscribeProgress(l: () => void) {
+  progressListeners.add(l);
+  return () => progressListeners.delete(l);
+}
+/** How far the key derivation for this cat has got, from 0 to 1. */
+export function useKeyProgress(who: Who): number {
+  return useSyncExternalStore(
+    subscribeProgress,
+    () => keyProgress.get(who) ?? state.keys[who].progress,
+    () => SERVER_STATE.keys[who].progress,
+  );
+}
 export const getState = get;
 
 function setSlot(who: Who, patch: Partial<Slot> | ((s: Slot) => Partial<Slot>)) {
@@ -229,17 +256,22 @@ async function runSelfTests() {
 // ---------------------------------------------------------------------------
 
 async function loadKey(who: Who, seed: Hex, fresh = false) {
+  setKeyProgress(who, 0);
   setSlot(who, { ...emptySlot(), seed, fresh, view: "busy" });
   let k: PublicKeyInfo;
   try {
     k = await keygen(seed, (_p, done, total) => {
-      if (state.keys[who].seed === seed) setSlot(who, { progress: done / total });
+      if (state.keys[who].seed === seed) setKeyProgress(who, done / total);
     });
   } catch (e) {
-    if (state.keys[who].seed === seed) setSlot(who, { view: "none", seed: null, error: errMsg(e) });
+    if (state.keys[who].seed === seed) {
+      setKeyProgress(who, null);
+      setSlot(who, { view: "none", seed: null, error: errMsg(e) });
+    }
     return;
   }
   if (state.keys[who].seed !== seed) return;
+  setKeyProgress(who, null);
   const account = accountOf(k.pkSeed, k.pkRoot);
   setSlot(who, { key: k, account, view: "have" });
   if (who === "alice") followAlice(account);
